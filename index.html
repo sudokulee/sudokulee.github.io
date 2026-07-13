@@ -1081,6 +1081,7 @@ let state = {
   initial: [],
   solution: [],
   notes: [],
+  scoredCells: Array.from({ length: 9 }, () => Array(9).fill(false)),
   difficulty: 'medium',
   timer: 0,
   score: 10,
@@ -1485,6 +1486,7 @@ function newGame(difficulty) {
   state.notes = Array.from({ length: 9 }, () =>
     Array.from({ length: 9 }, () => [])
   );
+  state.scoredCells = Array.from({ length: 9 }, () => Array(9).fill(false));
   state.difficulty = difficulty;
   state.timer = 0;
   state.score = 10;
@@ -1567,6 +1569,7 @@ function inputNumber(num) {
 
     // Check completion bonus
     const prevScore = state.score;
+    const prevScored = state.scoredCells[r][c];
     const bonus = checkCompletionBonus(r, c);
     state.score = state.score + bonus;
 
@@ -1576,8 +1579,8 @@ function inputNumber(num) {
       prev, next: num,
       prevNotes,
       nextNotes: [],
-      prevScore,
-      nextScore: state.score
+      prevScored,
+      nextScored: state.scoredCells[r][c]
     });
 
     // Check win
@@ -1653,6 +1656,9 @@ function undo() {
   if (action.type === 'value' || action.type === 'erase') {
     state.board[action.r][action.c] = action.prev;
     state.notes[action.r][action.c] = action.prevNotes || [];
+    if (action.prevScored !== undefined) {
+      state.scoredCells[action.r][action.c] = action.prevScored;
+    }
   } else if (action.type === 'note') {
     state.notes[action.r][action.c] = action.prev;
   } else if (action.type === 'hint') {
@@ -1672,6 +1678,9 @@ function redo() {
   if (action.type === 'value' || action.type === 'erase') {
     state.board[action.r][action.c] = action.next;
     state.notes[action.r][action.c] = action.nextNotes || [];
+    if (action.nextScored !== undefined) {
+      state.scoredCells[action.r][action.c] = action.nextScored;
+    }
   } else if (action.type === 'note') {
     state.notes[action.r][action.c] = action.next;
   } else if (action.type === 'hint') {
@@ -1969,16 +1978,19 @@ function checkCompletionBonus(row, col) {
       boxArr.push(state.board[r][c]);
     }
   }
-  if (isLineComplete(rowArr)) {
+  if (isLineComplete(rowArr) && !state.scoredCells[row][col]) {
     bonus += 2;
+    state.scoredCells[row][col] = true;
     showToast('행 완성! +2점');
   }
-  if (isLineComplete(colArr)) {
+  if (isLineComplete(colArr) && !state.scoredCells[row][col]) {
     bonus += 2;
+    state.scoredCells[row][col] = true;
     showToast('열 완성! +2점');
   }
-  if (isLineComplete(boxArr)) {
+  if (isLineComplete(boxArr) && !state.scoredCells[row][col]) {
     bonus += 2;
+    state.scoredCells[row][col] = true;
     showToast('박스 완성! +2점');
   }
   return bonus;
@@ -2082,6 +2094,7 @@ function saveGame() {
     initial: state.initial,
     solution: state.solution,
     notes: state.notes,
+    scoredCells: state.scoredCells,
     difficulty: state.difficulty,
     timer: state.timer,
     score: state.score,
@@ -2120,6 +2133,7 @@ function loadGame() {
     state.initial = data.initial;
     state.solution = data.solution;
     state.notes = data.notes;
+    state.scoredCells = data.scoredCells || Array.from({ length: 9 }, () => Array(9).fill(false));
     state.difficulty = data.difficulty || 'medium';
     state.timer = data.timer || 0;
     state.score = data.score !== undefined ? data.score : 10;
