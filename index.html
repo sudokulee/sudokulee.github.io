@@ -263,6 +263,15 @@ body{
 .score-low{color:#DC2626}
 .score-mid{color:#D97706}
 .score-high{color:#059669}
+.memo-indicator{
+  font-size:var(--text-sm);
+  font-weight:var(--weight-bold);
+  color:#2563EB;
+  background:#DBEAFE;
+  padding:var(--space-1) var(--space-2);
+  border-radius:var(--radius);
+  white-space:nowrap;
+}
 
 /* ═══════════════════════════════════════
    BOARD — Largest element, thick borders
@@ -902,6 +911,7 @@ body{
       <span class="timer" id="timerDisplay">00:00</span>
     </div>
     <span class="score-display">점수 <span class="score-count" id="scoreCount">10</span></span>
+    <span class="memo-indicator" id="memoIndicator" style="display:none">📝 메모 모드</span>
   </div>
 
   <!-- Board — The star of the show -->
@@ -913,7 +923,7 @@ body{
   <div class="controls">
     <!-- Action buttons -->
     <div class="action-row">
-      <button class="action-btn" id="btnMemo"><span class="btn-icon">📝</span>메모</button>
+      <button class="action-btn" id="btnMemo"><span class="btn-icon">📝</span>메모 모드</button>
       <button class="action-btn action-erase" id="btnErase"><span class="btn-icon">⌫</span>지우기</button>
       <button class="action-btn" id="btnHint"><span class="btn-icon">💡</span>힌트 도움</button>
       <button class="action-btn" id="btnUndo"><span class="btn-icon">↩</span>되돌리기</button>
@@ -1292,6 +1302,7 @@ const btnUndo = document.getElementById('btnUndo');
 const btnErase = document.getElementById('btnErase');
 const btnHint = document.getElementById('btnHint');
 const btnMemo = document.getElementById('btnMemo');
+const memoIndicator = document.getElementById('memoIndicator');
 const btnNewGame = document.getElementById('btnNewGame');
 const btnRecords = document.getElementById('btnRecords');
 const btnRules = document.getElementById('btnRules');
@@ -1626,7 +1637,8 @@ function eraseCell() {
 function toggleMemoMode() {
   state.noteMode = !state.noteMode;
   btnMemo.classList.toggle('memo-active', state.noteMode);
-  showToast(state.noteMode ? '📝 메모 모드' : '숫자 입력 모드');
+  memoIndicator.style.display = state.noteMode ? '' : 'none';
+  showToast(state.noteMode ? '📝 메모 모드 켜짐' : '숫자 입력 모드');
 }
 
 function confirmErase() {
@@ -1743,6 +1755,7 @@ function giveHint() {
   state.board[hr][hc] = state.solution[hr][hc];
   state.notes[hr][hc] = [];
   state.score = Math.max(0, state.score - 1);
+  updateScoreDisplay();
 
   pushHistory({
     type: 'hint',
