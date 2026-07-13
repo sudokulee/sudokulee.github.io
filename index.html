@@ -58,6 +58,7 @@
   --text-board:clamp(24px,6vw,32px);
   --text-numpad:clamp(22px,6vw,30px);
   --weight-regular:400;
+  --weight-medium:500;
   --weight-semibold:600;
   --weight-bold:700;
   --weight-extrabold:800;
@@ -1535,15 +1536,27 @@ function inputNumber(num) {
   if (state.initial[r][c] !== 0) return; // Can't edit initial cells
 
   if (state.noteMode) {
-    // Toggle note (kept for state compatibility, not exposed in UI)
+    // If cell has a number, clear it first
+    const prev = state.board[r][c];
     const prevNotes = [...state.notes[r][c]];
+    if (prev !== 0) {
+      state.board[r][c] = 0;
+      pushHistory({ type: 'erase', r, c, prev, next: 0, prevNotes, nextNotes: [] });
+    }
+    // Toggle note
     const idx = state.notes[r][c].indexOf(num);
     if (idx >= 0) {
       state.notes[r][c].splice(idx, 1);
     } else {
       state.notes[r][c].push(num);
     }
-    pushHistory({ type: 'note', r, c, prev: prevNotes, next: [...state.notes[r][c]] });
+    if (prev === 0) {
+      pushHistory({ type: 'note', r, c, prev: prevNotes, next: [...state.notes[r][c]] });
+    } else {
+      // Update the last history entry to include note change
+      const last = state.history[state.history.length - 1];
+      last.nextNotes = [...state.notes[r][c]];
+    }
   } else {
     // Place number
     const prev = state.board[r][c];
@@ -1565,7 +1578,6 @@ function inputNumber(num) {
     const prevScore = state.score;
     const bonus = checkCompletionBonus(r, c);
     state.score = state.score + bonus;
-    updateScoreDisplay();
 
     pushHistory({
       type: 'value',
@@ -1663,6 +1675,10 @@ function undo() {
   } else if (action.type === 'hint') {
     state.board[action.r][action.c] = action.prev;
     state.notes[action.r][action.c] = action.prevNotes || [];
+    if (action.prevScore !== undefined) {
+      state.score = action.prevScore;
+      updateScoreDisplay();
+    }
   }
 
   render();
@@ -2216,11 +2232,26 @@ function importGame(e) {
 // TOAST — 3.5 seconds for elderly readability
 // ═══════════════════════════════════════════
 let toastTimeout = null;
+let toastQueue = [];
 function showToast(msg) {
+  toastQueue.push(msg);
+  if (toastQueue.length === 1) {
+    showNextToast();
+  }
+}
+function showNextToast() {
+  if (toastQueue.length === 0) return;
+  const msg = toastQueue[0];
   toastEl.textContent = msg;
   toastEl.classList.add('show');
   if (toastTimeout) clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => toastEl.classList.remove('show'), 3500);
+  toastTimeout = setTimeout(() => {
+    toastEl.classList.remove('show');
+    toastQueue.shift();
+    if (toastQueue.length > 0) {
+      setTimeout(showNextToast, 300);
+    }
+  }, 2000);
 }
 
 // ═══════════════════════════════════════════
