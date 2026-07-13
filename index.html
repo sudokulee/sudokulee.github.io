@@ -257,9 +257,12 @@ body{
 .score-count{
   font-size:var(--text-lg);
   font-weight:var(--weight-extrabold);
-  color:var(--primary);
   margin-left:var(--space-1);
+  transition:color 0.3s ease;
 }
+.score-low{color:#DC2626}
+.score-mid{color:#D97706}
+.score-high{color:#059669}
 
 /* ═══════════════════════════════════════
    BOARD — Largest element, thick borders
@@ -311,8 +314,31 @@ body{
 .cell .value.user{color:var(--user-num)}
 .cell .value.error{color:var(--error);font-weight:var(--weight-extrabold)}
 
-/* Notes grid (hidden for elderly, kept for state compatibility) */
-.cell .notes{display:none}
+/* Notes grid */
+.cell .notes{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  grid-template-rows:repeat(3,1fr);
+  width:100%;
+  height:100%;
+  position:absolute;
+  top:0;
+  left:0;
+}
+.cell .notes span{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:clamp(8px,2.5vw,12px);
+  color:var(--text-secondary);
+  font-weight:var(--weight-medium);
+}
+.cell .value{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.cell.has-notes .value{display:none}
 
 /* ── Cell States — Very obvious visual cues ── */
 .cell.selected{
@@ -412,6 +438,12 @@ body{
   background:var(--error-bg);
   border-color:var(--error);
   color:var(--error);
+}
+/* Memo button active state */
+.action-btn.memo-active{
+  background:#DBEAFE;
+  border-color:#2563EB;
+  color:#2563EB;
 }
 
 /* ── Number Pad — Compact for mobile ── */
@@ -879,8 +911,9 @@ body{
 
   <!-- Controls — Bottom-anchored for thumb reach -->
   <div class="controls">
-    <!-- Action buttons — 3 essential actions only -->
+    <!-- Action buttons -->
     <div class="action-row">
+      <button class="action-btn" id="btnMemo"><span class="btn-icon">📝</span>메모</button>
       <button class="action-btn action-erase" id="btnErase"><span class="btn-icon">⌫</span>지우기</button>
       <button class="action-btn" id="btnHint"><span class="btn-icon">💡</span>힌트 도움</button>
       <button class="action-btn" id="btnUndo"><span class="btn-icon">↩</span>되돌리기</button>
@@ -1258,6 +1291,7 @@ const modalErase = document.getElementById('modalErase');
 const btnUndo = document.getElementById('btnUndo');
 const btnErase = document.getElementById('btnErase');
 const btnHint = document.getElementById('btnHint');
+const btnMemo = document.getElementById('btnMemo');
 const btnNewGame = document.getElementById('btnNewGame');
 const btnRecords = document.getElementById('btnRecords');
 const btnRules = document.getElementById('btnRules');
@@ -1366,6 +1400,7 @@ function bindEvents() {
   if (btnUndo) btnUndo.addEventListener('click', undo);
   btnErase.addEventListener('click', eraseCell);
   btnHint.addEventListener('click', giveHint);
+  btnMemo.addEventListener('click', toggleMemoMode);
   btnNewGame.addEventListener('click', showNewGameModal);
   btnRecords.addEventListener('click', showRecords);
   btnRules.addEventListener('click', function() {
@@ -1475,7 +1510,7 @@ function newGame(difficulty) {
 
   diffBadge.textContent = DIFFICULTY_LABELS[difficulty];
   diffBadge.dataset.diff = difficulty;
-  scoreEl.textContent = state.score;
+  updateScoreDisplay();
   render();
   saveGame();
   startTimer();
@@ -1532,7 +1567,7 @@ function inputNumber(num) {
     } else if (!correct) {
       state.score = Math.max(0, state.score - 3);
     }
-    scoreEl.textContent = state.score;
+    updateScoreDisplay();
 
     // Clear notes in same row/col/box when a number is placed
     clearRelatedNotes(r, c, num);
@@ -1588,6 +1623,11 @@ function eraseCell() {
   modalErase.classList.add('show');
 }
 
+function toggleMemoMode() {
+  state.noteMode = !state.noteMode;
+  btnMemo.classList.toggle('memo-active', state.noteMode);
+}
+
 function confirmErase() {
   modalErase.classList.remove('show');
   if (!state.selectedCell || state.gameOver || state.paused) return;
@@ -1618,7 +1658,7 @@ function undo() {
     state.notes[action.r][action.c] = action.prevNotes || [];
     if (action.prevScore !== undefined && action.nextScore !== undefined) {
       state.score = action.prevScore;
-      scoreEl.textContent = state.score;
+      updateScoreDisplay();
     }
     // Restore scoredCells if this was a scored move
     if (action.prevScored !== undefined) {
@@ -1645,7 +1685,7 @@ function redo() {
     state.notes[action.r][action.c] = action.nextNotes || [];
     if (action.nextScore !== undefined) {
       state.score = action.nextScore;
-      scoreEl.textContent = state.score;
+      updateScoreDisplay();
     }
     // Restore scoredCells if this was a scored move
     if (action.prevScored !== undefined) {
@@ -1658,7 +1698,7 @@ function redo() {
     state.notes[action.r][action.c] = action.nextNotes || [];
     if (action.nextScore !== undefined) {
       state.score = action.nextScore;
-      scoreEl.textContent = state.score;
+      updateScoreDisplay();
     }
   }
 
@@ -1761,7 +1801,7 @@ function checkWin() {
   setTimeout(() => {
     document.getElementById('winTime').textContent = formatTime(state.timer);
     document.getElementById('winDiff').textContent = DIFFICULTY_LABELS[state.difficulty];
-    scoreEl.textContent = state.score;
+    updateScoreDisplay();
     document.getElementById('winScore').textContent = state.score;
     document.getElementById('winTimeBonus').textContent = '+' + timeBonus;
     
@@ -1880,7 +1920,9 @@ function render() {
         val.textContent = '';
         val.style.display = 'none';
         notesDiv.style.display = '';
-        // Render notes (kept for state compatibility)
+        // Render notes
+        const hasNotes = state.notes[r][c].length > 0;
+        cell.classList.toggle('has-notes', hasNotes);
         for (let n = 1; n <= 9; n++) {
           const ns = notesDiv.querySelector('span[data-note="' + n + '"]');
           if (ns) ns.textContent = state.notes[r][c].includes(n) ? n : '';
@@ -1898,9 +1940,17 @@ function render() {
     btn.classList.toggle('completed', count <= 0);
   });
 
-  scoreEl.textContent = state.score;
+  updateScoreDisplay();
   timerEl.textContent = formatTime(state.timer);
   updateUndoButtons();
+}
+
+function updateScoreDisplay() {
+  updateScoreDisplay();
+  scoreEl.className = 'score-count';
+  if (state.score <= 3) scoreEl.classList.add('score-low');
+  else if (state.score <= 6) scoreEl.classList.add('score-mid');
+  else scoreEl.classList.add('score-high');
 }
 
 function getCellEl(r, c) {
