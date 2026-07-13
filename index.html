@@ -1308,7 +1308,7 @@ function bindEvents() {
     selectCell(r, c);
   });
 
-  // Click outside board to deselect cell
+  // Click outside board to deselect cell & close modals
   document.addEventListener('click', function(e) {
     if (!boardEl.contains(e.target) && !numpadEl.contains(e.target) && 
         !e.target.closest('.action-btn') && !e.target.closest('.modal')) {
@@ -1316,6 +1316,10 @@ function bindEvents() {
         state.selectedCell = null;
         render();
       }
+      // Close open modals
+      modalRecords.classList.remove('show');
+      modalRules.classList.remove('show');
+      modalNew.classList.remove('show');
     }
   });
 
