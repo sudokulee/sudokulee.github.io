@@ -1720,10 +1720,12 @@ function giveHint() {
 
   const prev = state.board[hr][hc];
   const prevNotes = [...state.notes[hr][hc]];
+  const prevScored = state.scoredCells[hr][hc];
 
   state.board[hr][hc] = state.solution[hr][hc];
   state.notes[hr][hc] = [];
   state.score = Math.max(0, state.score - 1);
+  state.scoredCells[hr][hc] = true;
   updateScoreDisplay();
 
   pushHistory({
@@ -1731,8 +1733,8 @@ function giveHint() {
     r: hr, c: hc,
     prev, next: state.solution[hr][hc],
     prevNotes, nextNotes: [],
-    prevScore: state.score + 1,
-    nextScore: state.score
+    prevScored,
+    nextScored: true
   });
 
   state.selectedCell = [hr, hc];
