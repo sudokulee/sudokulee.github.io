@@ -244,20 +244,20 @@ body{
   min-width:80px;
   text-align:right;
 }
-.mistakes{
-  font-size:var(--text-sm);
-  color:var(--text-secondary);
+.score-display{
+  font-size:var(--text-base);
   font-weight:var(--weight-bold);
-  background:var(--surface-raised);
-  padding:var(--space-2) var(--space-4);
-  border-radius:var(--radius);
+  color:var(--text);
+  padding:var(--space-2) var(--space-3);
   border:2px solid var(--border);
+  border-radius:var(--radius-sm);
+  background:var(--surface);
   white-space:nowrap;
 }
-.mistakes-count{
-  color:var(--error);
-  font-weight:var(--weight-extrabold);
+.score-count{
   font-size:var(--text-lg);
+  font-weight:var(--weight-extrabold);
+  color:var(--primary);
   margin-left:var(--space-1);
 }
 
@@ -797,7 +797,7 @@ body{
       <span class="timer-label">시간</span>
       <span class="timer" id="timerDisplay">00:00</span>
     </div>
-    <span class="mistakes">오류 <span class="mistakes-count" id="mistakesCount">0</span></span>
+    <span class="score-display">점수 <span class="score-count" id="scoreCount">10</span></span>
   </div>
 
   <!-- Board — The star of the show -->
@@ -860,7 +860,8 @@ body{
     <div class="completion-stats">
       <div class="stat"><span class="stat-val" id="winTime">00:00</span><span class="stat-label">소요 시간</span></div>
       <div class="stat"><span class="stat-val" id="winDiff">-</span><span class="stat-label">난이도</span></div>
-      <div class="stat"><span class="stat-val" id="winMistakes">0</span><span class="stat-label">오류</span></div>
+      <div class="stat"><span class="stat-val" id="winScore">0</span><span class="stat-label">점수</span></div>
+      <div class="stat"><span class="stat-val" id="winTimeBonus">+0</span><span class="stat-label">시간 보너스</span></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-primary" id="btnWinNew">새 게임</button>
@@ -918,7 +919,7 @@ let state = {
   notes: [],
   difficulty: 'medium',
   timer: 0,
-  mistakes: 0,
+  score: 10,
   selectedCell: null,
   noteMode: false,
   history: [],
@@ -953,10 +954,10 @@ function loadRecords() {
 
 function getDefaultRecords() {
   return {
-    easy: { bestTime: null, gamesPlayed: 0, gamesWon: 0 },
-    medium: { bestTime: null, gamesPlayed: 0, gamesWon: 0 },
-    hard: { bestTime: null, gamesPlayed: 0, gamesWon: 0 },
-    expert: { bestTime: null, gamesPlayed: 0, gamesWon: 0 }
+    easy: { bestTime: null, bestScore: 0, gamesPlayed: 0, gamesWon: 0 },
+    medium: { bestTime: null, bestScore: 0, gamesPlayed: 0, gamesWon: 0 },
+    hard: { bestTime: null, bestScore: 0, gamesPlayed: 0, gamesWon: 0 },
+    expert: { bestTime: null, bestScore: 0, gamesPlayed: 0, gamesWon: 0 }
   };
 }
 
@@ -968,14 +969,21 @@ function saveRecords(records) {
   }
 }
 
-function recordWin(difficulty, time) {
+function recordWin(difficulty, time, score) {
   const records = loadRecords();
   records[difficulty].gamesWon++;
   
-  // Check if new best time
   let isNewRecord = false;
+  
+  // Check if new best time
   if (records[difficulty].bestTime === null || time < records[difficulty].bestTime) {
     records[difficulty].bestTime = time;
+    isNewRecord = true;
+  }
+  
+  // Check if new best score
+  if (score > (records[difficulty].bestScore || 0)) {
+    records[difficulty].bestScore = score;
     isNewRecord = true;
   }
   
@@ -1106,7 +1114,7 @@ const boardEl = document.getElementById('board');
 const numpadEl = document.getElementById('numpad');
 const timerEl = document.getElementById('timerDisplay');
 const diffBadge = document.getElementById('diffBadge');
-const mistakesEl = document.getElementById('mistakesCount');
+const scoreEl = document.getElementById('scoreCount');
 const toastEl = document.getElementById('toast');
 const importInput = document.getElementById('importInput');
 
@@ -1306,7 +1314,7 @@ function newGame(difficulty) {
   );
   state.difficulty = difficulty;
   state.timer = 0;
-  state.mistakes = 0;
+  state.score = 10;
   state.selectedCell = null;
   state.noteMode = false;
   state.history = [];
@@ -1320,6 +1328,7 @@ function newGame(difficulty) {
 
   diffBadge.textContent = DIFFICULTY_LABELS[difficulty];
   diffBadge.dataset.diff = difficulty;
+  scoreEl.textContent = state.score;
   render();
   saveGame();
   startTimer();
@@ -1366,10 +1375,12 @@ function inputNumber(num) {
     state.board[r][c] = num;
     state.notes[r][c] = [];
 
-    if (!correct) {
-      state.mistakes++;
-      mistakesEl.textContent = state.mistakes;
+    if (correct) {
+      state.score = Math.min(10, state.score + 5);
+    } else {
+      state.score = Math.max(0, state.score - 3);
     }
+    scoreEl.textContent = state.score;
 
     // Clear notes in same row/col/box when a number is placed
     clearRelatedNotes(r, c, num);
@@ -1381,7 +1392,8 @@ function inputNumber(num) {
       prevNotes,
       nextNotes: [],
       correct,
-      wasIncorrect: !correct
+      prevScore: state.score - (correct ? 5 : -3),
+      nextScore: state.score
     });
 
     // Check win
@@ -1451,9 +1463,9 @@ function undo() {
   if (action.type === 'value' || action.type === 'erase') {
     state.board[action.r][action.c] = action.prev;
     state.notes[action.r][action.c] = action.prevNotes || [];
-    if (action.wasIncorrect) {
-      state.mistakes = Math.max(0, state.mistakes - 1);
-      mistakesEl.textContent = state.mistakes;
+    if (action.prevScore !== undefined && action.nextScore !== undefined) {
+      state.score = action.prevScore;
+      scoreEl.textContent = state.score;
     }
   } else if (action.type === 'note') {
     state.notes[action.r][action.c] = action.prev;
@@ -1474,11 +1486,19 @@ function redo() {
   if (action.type === 'value' || action.type === 'erase') {
     state.board[action.r][action.c] = action.next;
     state.notes[action.r][action.c] = action.nextNotes || [];
+    if (action.nextScore !== undefined) {
+      state.score = action.nextScore;
+      scoreEl.textContent = state.score;
+    }
   } else if (action.type === 'note') {
     state.notes[action.r][action.c] = action.next;
   } else if (action.type === 'hint') {
     state.board[action.r][action.c] = action.next;
     state.notes[action.r][action.c] = action.nextNotes || [];
+    if (action.nextScore !== undefined) {
+      state.score = action.nextScore;
+      scoreEl.textContent = state.score;
+    }
   }
 
   render();
@@ -1520,12 +1540,15 @@ function giveHint() {
 
   state.board[hr][hc] = state.solution[hr][hc];
   state.notes[hr][hc] = [];
+  state.score = Math.max(0, state.score - 1);
 
   pushHistory({
     type: 'hint',
     r: hr, c: hc,
     prev, next: state.solution[hr][hc],
-    prevNotes, nextNotes: []
+    prevNotes, nextNotes: [],
+    prevScore: state.score + 1,
+    nextScore: state.score
   });
 
   state.selectedCell = [hr, hc];
@@ -1566,12 +1589,18 @@ function checkWin() {
   saveGame();
 
   // Record win and check for new record
-  const isNewRecord = recordWin(state.difficulty, state.timer);
+  const isNewRecord = recordWin(state.difficulty, state.timer, state.score);
 
   setTimeout(() => {
     document.getElementById('winTime').textContent = formatTime(state.timer);
     document.getElementById('winDiff').textContent = DIFFICULTY_LABELS[state.difficulty];
-    document.getElementById('winMistakes').textContent = state.mistakes;
+    // Calculate time bonus: max 10 points, -1 per minute
+    const minutes = Math.floor(state.timer / 60);
+    const timeBonus = Math.max(0, 10 - minutes);
+    state.score += timeBonus;
+    scoreEl.textContent = state.score;
+    document.getElementById('winScore').textContent = state.score;
+    document.getElementById('winTimeBonus').textContent = '+' + timeBonus;
     
     // Show new record badge
     const newRecordEl = document.getElementById('winNewRecord');
@@ -1706,7 +1735,7 @@ function render() {
     btn.classList.toggle('completed', count <= 0);
   });
 
-  mistakesEl.textContent = state.mistakes;
+  scoreEl.textContent = state.score;
   timerEl.textContent = formatTime(state.timer);
   updateUndoButtons();
 }
@@ -1769,7 +1798,7 @@ function showRecords() {
   for (const diff of diffs) {
     const r = records[diff];
     const bestTime = r.bestTime !== null ? formatTime(r.bestTime) : '--:--';
-    const winRate = r.gamesPlayed > 0 ? Math.round((r.gamesWon / r.gamesPlayed) * 100) : 0;
+    const bestScore = r.bestScore || 0;
     
     html += `
       <div class="record-item" data-diff="${diff}">
@@ -1778,6 +1807,10 @@ function showRecords() {
           <div class="record-stat">
             <span class="record-stat-val">${bestTime}</span>
             <span class="record-stat-label">최고 기록</span>
+          </div>
+          <div class="record-stat">
+            <span class="record-stat-val">${bestScore}점</span>
+            <span class="record-stat-label">최고 점수</span>
           </div>
           <div class="record-stat">
             <span class="record-stat-val">${r.gamesWon}/${r.gamesPlayed}</span>
@@ -1811,7 +1844,7 @@ function saveGame() {
     notes: state.notes,
     difficulty: state.difficulty,
     timer: state.timer,
-    mistakes: state.mistakes,
+    score: state.score,
     selectedCell: state.selectedCell,
     noteMode: state.noteMode,
     history: state.history.slice(-50), // Limit saved history
@@ -1849,7 +1882,7 @@ function loadGame() {
     state.notes = data.notes;
     state.difficulty = data.difficulty || 'medium';
     state.timer = data.timer || 0;
-    state.mistakes = data.mistakes || 0;
+    state.score = data.score !== undefined ? data.score : 10;
     state.selectedCell = data.selectedCell;
     state.noteMode = data.noteMode || false;
     state.history = data.history || [];
@@ -1879,7 +1912,7 @@ function exportGame() {
     notes: state.notes,
     difficulty: state.difficulty,
     timer: state.timer,
-    mistakes: state.mistakes,
+    score: state.score,
     selectedCell: state.selectedCell,
     noteMode: state.noteMode,
     history: state.history.slice(-50),
