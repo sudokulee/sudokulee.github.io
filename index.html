@@ -6,7 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#FFFFFF">
-<title>스도쿠</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<title>아빠의 스도쿠</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -131,9 +132,14 @@ body{
   line-height:1.2;
 }
 .logo-accent{color:var(--primary)}
+.header-actions{
+  display:flex;
+  gap:var(--space-2);
+}
 .header-btn{
   display:flex;
   align-items:center;
+  justify-content:center;
   gap:var(--space-2);
   padding:var(--space-3) var(--space-5);
   border-radius:var(--btn-radius);
@@ -150,8 +156,19 @@ body{
   line-height:1.2;
   -webkit-tap-highlight-color:transparent;
 }
-.header-btn:active{
-  background:var(--primary-hover);
+.header-btn:only-child{
+  padding:var(--space-3) var(--space-5);
+}
+.header-btn-outline{
+  background:#FFFFFF;
+  color:#111827;
+  border:2px solid #111827;
+  padding:var(--space-3) var(--space-4);
+  font-size:var(--text-base);
+  font-weight:var(--weight-bold);
+}
+.header-btn-outline:active{
+  background:#F3F4F6;
   transform:scale(0.97);
 }
 
@@ -176,6 +193,27 @@ body{
   letter-spacing:0.3px;
   border:2px solid var(--primary);
   white-space:nowrap;
+  transition:all var(--transition-base);
+}
+.difficulty-badge[data-diff="easy"]{
+  background:#D1FAE5;
+  color:#059669;
+  border-color:#059669;
+}
+.difficulty-badge[data-diff="medium"]{
+  background:#DBEAFE;
+  color:#2563EB;
+  border-color:#2563EB;
+}
+.difficulty-badge[data-diff="hard"]{
+  background:#FEF3C7;
+  color:#D97706;
+  border-color:#D97706;
+}
+.difficulty-badge[data-diff="expert"]{
+  background:#FEE2E2;
+  color:#DC2626;
+  border-color:#DC2626;
 }
 .timer-group{
   display:flex;
@@ -372,21 +410,21 @@ body{
   color:var(--error);
 }
 
-/* ── Number Pad — Large, finger-friendly ── */
+/* ── Number Pad — Compact for mobile ── */
 .numpad{
   display:grid;
   grid-template-columns:repeat(9,1fr);
-  gap:var(--space-2);
+  gap:var(--space-1);
   padding:var(--space-1) 0;
 }
 .num-btn{
   aspect-ratio:1;
-  min-height:var(--touch-min);
+  min-height:44px;
   border-radius:var(--btn-radius);
-  border:2.5px solid var(--border);
+  border:2px solid var(--border);
   background:var(--surface);
   color:var(--text);
-  font-size:var(--text-numpad);
+  font-size:20px;
   font-weight:var(--weight-extrabold);
   font-family:var(--font-family);
   cursor:pointer;
@@ -492,8 +530,7 @@ body{
   -webkit-tap-highlight-color:transparent;
 }
 .diff-btn:active{
-  border-color:var(--primary);
-  background:var(--primary-light);
+  transform:scale(0.97);
 }
 .diff-btn .diff-name{
   font-size:var(--text-lg);
@@ -509,10 +546,37 @@ body{
   display:block;
   font-weight:var(--weight-regular);
 }
-.diff-btn.active{
-  border-color:var(--primary);
-  background:var(--primary-light);
-  box-shadow:0 0 0 3px var(--primary-ring);
+.diff-btn[data-diff="easy"]{
+  border-color:#059669;
+}
+.diff-btn[data-diff="easy"] .diff-name{color:#059669}
+.diff-btn[data-diff="easy"].active{
+  background:#D1FAE5;
+  box-shadow:0 0 0 3px rgba(5,150,105,0.3);
+}
+.diff-btn[data-diff="medium"]{
+  border-color:#2563EB;
+}
+.diff-btn[data-diff="medium"] .diff-name{color:#2563EB}
+.diff-btn[data-diff="medium"].active{
+  background:#DBEAFE;
+  box-shadow:0 0 0 3px rgba(37,99,235,0.3);
+}
+.diff-btn[data-diff="hard"]{
+  border-color:#D97706;
+}
+.diff-btn[data-diff="hard"] .diff-name{color:#D97706}
+.diff-btn[data-diff="hard"].active{
+  background:#FEF3C7;
+  box-shadow:0 0 0 3px rgba(217,119,6,0.3);
+}
+.diff-btn[data-diff="expert"]{
+  border-color:#DC2626;
+}
+.diff-btn[data-diff="expert"] .diff-name{color:#DC2626}
+.diff-btn[data-diff="expert"].active{
+  background:#FEE2E2;
+  box-shadow:0 0 0 3px rgba(220,38,38,0.3);
 }
 
 /* Modal Actions — Large, clear buttons */
@@ -584,6 +648,70 @@ body{
   font-weight:var(--weight-semibold);
 }
 
+/* New Record Badge */
+.new-record-badge{
+  background:linear-gradient(135deg,#F59E0B,#D97706);
+  color:#FFFFFF;
+  font-size:var(--text-lg);
+  font-weight:var(--weight-extrabold);
+  padding:var(--space-2) var(--space-4);
+  border-radius:var(--radius);
+  margin:var(--space-3) 0;
+  animation:pulse 1s ease infinite;
+}
+@keyframes pulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.05)}
+}
+
+/* Records Modal */
+.modal-records{
+  max-width:380px;
+}
+.records-list{
+  margin:var(--space-4) 0;
+  text-align:left;
+}
+.record-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:var(--space-3) var(--space-4);
+  border:2px solid var(--border);
+  border-radius:var(--radius);
+  margin-bottom:var(--space-2);
+  background:var(--surface);
+}
+.record-item:last-child{
+  margin-bottom:0;
+}
+.record-diff{
+  font-size:var(--text-lg);
+  font-weight:var(--weight-bold);
+}
+.record-item[data-diff="easy"] .record-diff{color:#059669}
+.record-item[data-diff="medium"] .record-diff{color:#2563EB}
+.record-item[data-diff="hard"] .record-diff{color:#D97706}
+.record-item[data-diff="expert"] .record-diff{color:#DC2626}
+.record-stats{
+  display:flex;
+  gap:var(--space-4);
+  font-size:var(--text-sm);
+  color:var(--text-secondary);
+}
+.record-stat{
+  text-align:right;
+}
+.record-stat-val{
+  font-weight:var(--weight-bold);
+  color:var(--text);
+  display:block;
+}
+.record-stat-label{
+  font-size:var(--text-xs);
+  color:var(--text-muted);
+}
+
 /* ═══════════════════════════════════════
    TOAST — Large, persistent, impossible to miss
    ═══════════════════════════════════════ */
@@ -633,13 +761,14 @@ body{
   .action-btn{padding:var(--space-2);min-height:48px}
   .action-btn .btn-icon{font-size:var(--text-lg)}
   .action-btn{font-size:var(--text-xs)}
-  .numpad{gap:var(--space-1)}
-  .num-btn{min-height:44px;font-size:18px}
+  .numpad{gap:4px}
+  .num-btn{min-height:40px;font-size:18px;border-width:1.5px}
   .board-wrapper{padding:var(--space-1) 0 var(--space-2)}
 }
 @media(max-width:360px){
-  :root{--cell-size:36px;--text-board:20px;--text-numpad:18px}
-  .numpad{gap:var(--space-1)}
+  :root{--cell-size:36px;--text-board:20px;--text-numpad:16px}
+  .numpad{gap:3px}
+  .num-btn{min-height:36px;font-size:16px}
   .action-btn{padding:var(--space-2);font-size:var(--text-xs)}
   .action-btn .btn-icon{font-size:var(--text-lg)}
 }
@@ -650,13 +779,16 @@ body{
 <div class="container">
   <!-- Header — Simplified: just logo + new game -->
   <header class="header">
-    <div class="logo">스도쿠<span class="logo-accent">.</span></div>
-    <button class="header-btn" id="btnNewGame" aria-label="새 게임">새 게임</button>
+    <div class="logo">🧩 아빠의 스도쿠</div>
+    <div class="header-actions">
+      <button class="header-btn header-btn-outline" id="btnRecords" aria-label="기록">기록</button>
+      <button class="header-btn header-btn-outline" id="btnNewGame" aria-label="새 게임">새 게임</button>
+    </div>
   </header>
 
   <!-- Status bar — Large, clear info -->
   <div class="status-bar">
-    <span class="difficulty-badge" id="diffBadge">보통</span>
+    <span class="difficulty-badge" id="diffBadge" data-diff="medium">보통</span>
     <div class="timer-group">
       <span class="timer-label">시간</span>
       <span class="timer" id="timerDisplay">00:00</span>
@@ -720,6 +852,7 @@ body{
     <span class="modal-emoji">🎉</span>
     <h2>축하합니다!</h2>
     <p>퍼즐을 완성했습니다</p>
+    <div id="winNewRecord" class="new-record-badge" style="display:none">🏆 새 기록!</div>
     <div class="completion-stats">
       <div class="stat"><span class="stat-val" id="winTime">00:00</span><span class="stat-label">소요 시간</span></div>
       <div class="stat"><span class="stat-val" id="winDiff">-</span><span class="stat-label">난이도</span></div>
@@ -743,6 +876,18 @@ body{
   </div>
 </div>
 
+<!-- Records Modal -->
+<div class="modal-overlay" id="modalRecords">
+  <div class="modal modal-records">
+    <span class="modal-emoji">🏆</span>
+    <h2>기록</h2>
+    <div class="records-list" id="recordsList"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="btnCloseRecords">닫기</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -757,6 +902,7 @@ body{
 // CONSTANTS & STATE
 // ═══════════════════════════════════════════
 const STORAGE_KEY = 'sudoku_game_v1';
+const RECORDS_KEY = 'sudoku_records_v1';
 const DIFFICULTY_CLUES = { easy: 36, medium: 30, hard: 25, expert: 21 };
 const DIFFICULTY_LABELS = { easy: '쉬움', medium: '보통', hard: '어려움', expert: '전문가' };
 const HISTORY_LIMIT = 200;
@@ -781,6 +927,69 @@ let state = {
 
 let timerInterval = null;
 let saveDebounce = null;
+
+// ═══════════════════════════════════════════
+// RECORDS (localStorage)
+// ═══════════════════════════════════════════
+function loadRecords() {
+  try {
+    const raw = localStorage.getItem(RECORDS_KEY);
+    if (!raw) return getDefaultRecords();
+    const data = JSON.parse(raw);
+    // Ensure all difficulty levels exist
+    const defaults = getDefaultRecords();
+    for (const diff of Object.keys(defaults)) {
+      if (!data[diff]) data[diff] = defaults[diff];
+    }
+    return data;
+  } catch (e) {
+    return getDefaultRecords();
+  }
+}
+
+function getDefaultRecords() {
+  return {
+    easy: { bestTime: null, gamesPlayed: 0, gamesWon: 0 },
+    medium: { bestTime: null, gamesPlayed: 0, gamesWon: 0 },
+    hard: { bestTime: null, gamesPlayed: 0, gamesWon: 0 },
+    expert: { bestTime: null, gamesPlayed: 0, gamesWon: 0 }
+  };
+}
+
+function saveRecords(records) {
+  try {
+    localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+  } catch (e) {
+    console.warn('Failed to save records:', e);
+  }
+}
+
+function recordWin(difficulty, time) {
+  const records = loadRecords();
+  records[difficulty].gamesWon++;
+  
+  // Check if new best time
+  let isNewRecord = false;
+  if (records[difficulty].bestTime === null || time < records[difficulty].bestTime) {
+    records[difficulty].bestTime = time;
+    isNewRecord = true;
+  }
+  
+  saveRecords(records);
+  return isNewRecord;
+}
+
+function recordGamePlayed(difficulty) {
+  const records = loadRecords();
+  records[difficulty].gamesPlayed++;
+  saveRecords(records);
+}
+
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
 
 // ═══════════════════════════════════════════
 // SUDOKU GENERATOR (Backtracking)
@@ -906,12 +1115,16 @@ const btnUndo = document.getElementById('btnUndo');
 const btnErase = document.getElementById('btnErase');
 const btnHint = document.getElementById('btnHint');
 const btnNewGame = document.getElementById('btnNewGame');
+const btnRecords = document.getElementById('btnRecords');
 const btnResume = document.getElementById('btnResume');
 const btnWinNew = document.getElementById('btnWinNew');
 const btnCancelNew = document.getElementById('btnCancelNew');
 const btnConfirmNew = document.getElementById('btnConfirmNew');
 const btnCancelErase = document.getElementById('btnCancelErase');
 const btnConfirmErase = document.getElementById('btnConfirmErase');
+const modalRecords = document.getElementById('modalRecords');
+const btnCloseRecords = document.getElementById('btnCloseRecords');
+const recordsList = document.getElementById('recordsList');
 
 // ═══════════════════════════════════════════
 // INITIALIZATION
@@ -1002,6 +1215,7 @@ function bindEvents() {
   btnErase.addEventListener('click', eraseCell);
   btnHint.addEventListener('click', giveHint);
   btnNewGame.addEventListener('click', showNewGameModal);
+  btnRecords.addEventListener('click', showRecords);
   btnResume.addEventListener('click', togglePause);
   btnWinNew.addEventListener('click', function() {
     modalWin.classList.remove('show');
@@ -1015,6 +1229,9 @@ function bindEvents() {
     modalErase.classList.remove('show');
   });
   btnConfirmErase.addEventListener('click', confirmErase);
+  btnCloseRecords.addEventListener('click', function() {
+    modalRecords.classList.remove('show');
+  });
 
   // Difficulty selection
   document.querySelectorAll('.diff-btn').forEach(function(btn) {
@@ -1094,7 +1311,11 @@ function newGame(difficulty) {
   state.gameOver = false;
   state.createdAt = Date.now();
 
+  // Record game played
+  recordGamePlayed(difficulty);
+
   diffBadge.textContent = DIFFICULTY_LABELS[difficulty];
+  diffBadge.dataset.diff = difficulty;
   render();
   saveGame();
   startTimer();
@@ -1334,10 +1555,20 @@ function checkWin() {
   stopTimer();
   saveGame();
 
+  // Record win and check for new record
+  const isNewRecord = recordWin(state.difficulty, state.timer);
+
   setTimeout(() => {
     document.getElementById('winTime').textContent = formatTime(state.timer);
     document.getElementById('winDiff').textContent = DIFFICULTY_LABELS[state.difficulty];
     document.getElementById('winMistakes').textContent = state.mistakes;
+    
+    // Show new record badge
+    const newRecordEl = document.getElementById('winNewRecord');
+    if (newRecordEl) {
+      newRecordEl.style.display = isNewRecord ? 'block' : 'none';
+    }
+    
     modalWin.classList.add('show');
   }, 400);
 }
@@ -1517,6 +1748,40 @@ function hasAnyValues() {
   return false;
 }
 
+// ═══════════════════════════════════════════
+// RECORDS MODAL
+// ═══════════════════════════════════════════
+function showRecords() {
+  const records = loadRecords();
+  const diffs = ['easy', 'medium', 'hard', 'expert'];
+  
+  let html = '';
+  for (const diff of diffs) {
+    const r = records[diff];
+    const bestTime = r.bestTime !== null ? formatTime(r.bestTime) : '--:--';
+    const winRate = r.gamesPlayed > 0 ? Math.round((r.gamesWon / r.gamesPlayed) * 100) : 0;
+    
+    html += `
+      <div class="record-item" data-diff="${diff}">
+        <div class="record-diff">${DIFFICULTY_LABELS[diff]}</div>
+        <div class="record-stats">
+          <div class="record-stat">
+            <span class="record-stat-val">${bestTime}</span>
+            <span class="record-stat-label">최고 기록</span>
+          </div>
+          <div class="record-stat">
+            <span class="record-stat-val">${r.gamesWon}/${r.gamesPlayed}</span>
+            <span class="record-stat-label">승리/총게임</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  recordsList.innerHTML = html;
+  modalRecords.classList.add('show');
+}
+
 function confirmNewGame() {
   const active = document.querySelector('.diff-btn.active');
   const diff = active ? active.dataset.diff : 'medium';
@@ -1584,6 +1849,7 @@ function loadGame() {
     state.paused = false;
 
     diffBadge.textContent = DIFFICULTY_LABELS[state.difficulty] || '보통';
+    diffBadge.dataset.diff = state.difficulty || 'medium';
     render();
   } catch (e) {
     console.warn('Failed to load game:', e);
