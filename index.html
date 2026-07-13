@@ -1667,10 +1667,6 @@ function undo() {
   } else if (action.type === 'hint') {
     state.board[action.r][action.c] = action.prev;
     state.notes[action.r][action.c] = action.prevNotes || [];
-    if (action.prevScore !== undefined) {
-      state.score = action.prevScore;
-      updateScoreDisplay();
-    }
   }
 
   render();
@@ -1690,10 +1686,6 @@ function redo() {
   } else if (action.type === 'hint') {
     state.board[action.r][action.c] = action.next;
     state.notes[action.r][action.c] = action.nextNotes || [];
-    if (action.nextScore !== undefined) {
-      state.score = action.nextScore;
-      updateScoreDisplay();
-    }
   }
 
   render();
