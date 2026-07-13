@@ -263,15 +263,6 @@ body{
 .score-low{color:#DC2626}
 .score-mid{color:#D97706}
 .score-high{color:#059669}
-.memo-indicator{
-  font-size:var(--text-sm);
-  font-weight:var(--weight-bold);
-  color:#2563EB;
-  background:#DBEAFE;
-  padding:var(--space-1) var(--space-2);
-  border-radius:var(--radius);
-  white-space:nowrap;
-}
 
 /* ═══════════════════════════════════════
    BOARD — Largest element, thick borders
@@ -833,8 +824,8 @@ body{
    ═══════════════════════════════════════ */
 .toast{
   position:fixed;
-  bottom:calc(100px + env(safe-area-inset-bottom));
-  left:50%;transform:translateX(-50%) translateY(20px);
+  top:calc(20px + env(safe-area-inset-top));
+  left:50%;transform:translateX(-50%) translateY(-20px);
   background:var(--text);
   color:#FFFFFF;
   padding:var(--space-4) var(--space-6);
@@ -911,7 +902,6 @@ body{
       <span class="timer" id="timerDisplay">00:00</span>
     </div>
     <span class="score-display">점수 <span class="score-count" id="scoreCount">10</span></span>
-    <span class="memo-indicator" id="memoIndicator" style="display:none">📝 메모 모드</span>
   </div>
 
   <!-- Board — The star of the show -->
@@ -1035,13 +1025,18 @@ body{
         <div class="score-rules">
           <div class="score-rule">
             <span class="score-icon">✅</span>
-            <span class="score-text">정답 입력</span>
-            <span class="score-value positive">+5점</span>
+            <span class="score-text">행 완성</span>
+            <span class="score-value positive">+2점</span>
           </div>
           <div class="score-rule">
-            <span class="score-icon">❌</span>
-            <span class="score-text">오답 입력</span>
-            <span class="score-value negative">-3점</span>
+            <span class="score-icon">✅</span>
+            <span class="score-text">열 완성</span>
+            <span class="score-value positive">+2점</span>
+          </div>
+          <div class="score-rule">
+            <span class="score-icon">✅</span>
+            <span class="score-text">박스 완성</span>
+            <span class="score-value positive">+2점</span>
           </div>
           <div class="score-rule">
             <span class="score-icon">💡</span>
@@ -1054,7 +1049,7 @@ body{
             <span class="score-value positive">최대 +10점</span>
           </div>
         </div>
-        <p class="score-note">* 시작 점수: 10점<br>* 각 칸은 한 번만 점수가 부여됩니다<br>* 되돌리기 시 점수도 복원됩니다</p>
+        <p class="score-note">* 시작 점수: 10점<br>* 숫자 중복은 빨간색으로 표시됩니다<br>* 되돌리기 시 점수도 복원됩니다</p>
       </div>
       <div class="rule-section">
         <h3>⏱️ 시간 보너스 계산</h3>
@@ -1170,12 +1165,6 @@ function recordGamePlayed(difficulty) {
   const records = loadRecords();
   records[difficulty].gamesPlayed++;
   saveRecords(records);
-}
-
-function formatTime(seconds) {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
 // ═══════════════════════════════════════════
@@ -1302,7 +1291,6 @@ const btnUndo = document.getElementById('btnUndo');
 const btnErase = document.getElementById('btnErase');
 const btnHint = document.getElementById('btnHint');
 const btnMemo = document.getElementById('btnMemo');
-const memoIndicator = document.getElementById('memoIndicator');
 const btnNewGame = document.getElementById('btnNewGame');
 const btnRecords = document.getElementById('btnRecords');
 const btnRules = document.getElementById('btnRules');
@@ -1525,7 +1513,7 @@ function newGame(difficulty) {
   render();
   saveGame();
   startTimer();
-  showToast('새 게임 시작!');
+  showToast('🎮 새 게임 시작!');
 }
 
 function selectCell(r, c) {
@@ -1562,26 +1550,22 @@ function inputNumber(num) {
     if (prev === num) return; // Same number, no-op
     const prevNotes = [...state.notes[r][c]];
 
-    // Check if correct
-    const correct = state.solution[r][c] === num;
-    
-    // Check if this cell was previously empty or wrong (for scoring)
-    const wasEmptyOrWrong = prev === 0 || prev !== state.solution[r][c];
-    const shouldScore = wasEmptyOrWrong && !state.scoredCells[r][c];
-
     state.board[r][c] = num;
     state.notes[r][c] = [];
 
-    if (correct && shouldScore) {
-      state.score = state.score + 5;
-      state.scoredCells[r][c] = true;
-    } else if (!correct) {
-      state.score = Math.max(0, state.score - 3);
-    }
-    updateScoreDisplay();
-
     // Clear notes in same row/col/box when a number is placed
     clearRelatedNotes(r, c, num);
+
+    // Show conflict toast
+    if (hasConflict(r, c, num)) {
+      showToast('⚠️ 숫자가 중복됩니다');
+    }
+
+    // Check completion bonus
+    const prevScore = state.score;
+    const bonus = checkCompletionBonus(r, c);
+    state.score = state.score + bonus;
+    updateScoreDisplay();
 
     pushHistory({
       type: 'value',
@@ -1589,10 +1573,8 @@ function inputNumber(num) {
       prev, next: num,
       prevNotes,
       nextNotes: [],
-      correct,
-      prevScore: state.score - (correct && shouldScore ? 5 : (!correct ? -3 : 0)),
-      nextScore: state.score,
-      prevScored: !shouldScore && correct
+      prevScore,
+      nextScore: state.score
     });
 
     // Check win
@@ -1637,8 +1619,7 @@ function eraseCell() {
 function toggleMemoMode() {
   state.noteMode = !state.noteMode;
   btnMemo.classList.toggle('memo-active', state.noteMode);
-  memoIndicator.style.display = state.noteMode ? '' : 'none';
-  showToast(state.noteMode ? '📝 메모 모드 켜짐' : '숫자 입력 모드');
+  showToast(state.noteMode ? '📝 메모 모드' : '🔢 입력 모드');
 }
 
 function confirmErase() {
@@ -1658,7 +1639,7 @@ function confirmErase() {
   pushHistory({ type: 'erase', r, c, prev, next: 0, prevNotes, nextNotes: [] });
   render();
   saveGame();
-  showToast('지웠습니다');
+  showToast('🗑️ 지웠습니다');
 }
 
 function undo() {
@@ -1673,9 +1654,9 @@ function undo() {
       state.score = action.prevScore;
       updateScoreDisplay();
     }
-    // Restore scoredCells if this was a scored move
+    // Restore scoredCells
     if (action.prevScored !== undefined) {
-      state.scoredCells[action.r][action.c] = !action.prevScored;
+      state.scoredCells[action.r][action.c] = action.prevScored;
     }
   } else if (action.type === 'note') {
     state.notes[action.r][action.c] = action.prev;
@@ -1700,9 +1681,9 @@ function redo() {
       state.score = action.nextScore;
       updateScoreDisplay();
     }
-    // Restore scoredCells if this was a scored move
-    if (action.prevScored !== undefined) {
-      state.scoredCells[action.r][action.c] = action.prevScored;
+    // Restore scoredCells
+    if (action.nextScored !== undefined) {
+      state.scoredCells[action.r][action.c] = action.nextScored;
     }
   } else if (action.type === 'note') {
     state.notes[action.r][action.c] = action.next;
@@ -1719,10 +1700,6 @@ function redo() {
   saveGame();
 }
 
-function toggleNoteMode() {
-  state.noteMode = !state.noteMode;
-}
-
 function giveHint() {
   if (state.gameOver || state.paused) return;
 
@@ -1736,7 +1713,7 @@ function giveHint() {
     }
   }
   if (candidates.length === 0) {
-    showToast('힌트를 사용할 칸이 없습니다');
+    showToast('❌ 힌트를 사용할 칸이 없습니다');
     return;
   }
 
@@ -1774,7 +1751,7 @@ function giveHint() {
   if (cell) cell.classList.add('hint-pop');
   setTimeout(() => { if (cell) cell.classList.remove('hint-pop'); }, 500);
 
-  showToast('힌트 사용!');
+  showToast('💡 힌트 사용!');
   checkWin();
   saveGame();
 }
@@ -1916,16 +1893,18 @@ function render() {
         }
       }
 
-      // Error highlighting
-      if (num !== 0 && !isInitial && num !== state.solution[r][c]) {
-        cell.classList.add('error-cell');
+      // Error highlighting — only show if same number exists in row/col/box
+      if (num !== 0 && !isInitial) {
+        if (hasConflict(r, c, num)) {
+          cell.classList.add('error-cell');
+        }
       }
 
       // Value display
       if (num !== 0) {
         val.textContent = num;
         val.className = 'value ' + (isInitial ? 'initial' : 'user');
-        if (num !== 0 && !isInitial && num !== state.solution[r][c]) {
+        if (num !== 0 && !isInitial && hasConflict(r, c, num)) {
           val.classList.add('error');
         }
         notesDiv.style.display = 'none';
@@ -1969,6 +1948,57 @@ function updateScoreDisplay() {
 
 function getCellEl(r, c) {
   return boardEl.querySelector('.cell[data-row="' + r + '"][data-col="' + c + '"]');
+}
+
+function hasConflict(row, col, num) {
+  // Check row
+  for (let i = 0; i < 9; i++) {
+    if (i !== col && state.board[row][i] === num) return true;
+  }
+  // Check column
+  for (let i = 0; i < 9; i++) {
+    if (i !== row && state.board[i][col] === num) return true;
+  }
+  // Check 3x3 box
+  const br = Math.floor(row / 3) * 3;
+  const bc = Math.floor(col / 3) * 3;
+  for (let r = br; r < br + 3; r++) {
+    for (let c = bc; c < bc + 3; c++) {
+      if ((r !== row || c !== col) && state.board[r][c] === num) return true;
+    }
+  }
+  return false;
+}
+
+function isLineComplete(arr) {
+  return arr.every(function(v) { return v !== 0; }) && new Set(arr).size === 9;
+}
+
+function checkCompletionBonus(row, col) {
+  let bonus = 0;
+  const rowArr = state.board[row];
+  const colArr = state.board.map(function(r) { return r[col]; });
+  const br = Math.floor(row / 3) * 3;
+  const bc = Math.floor(col / 3) * 3;
+  const boxArr = [];
+  for (let r = br; r < br + 3; r++) {
+    for (let c = bc; c < bc + 3; c++) {
+      boxArr.push(state.board[r][c]);
+    }
+  }
+  if (isLineComplete(rowArr)) {
+    bonus += 2;
+    showToast('행 완성! +2점');
+  }
+  if (isLineComplete(colArr)) {
+    bonus += 2;
+    showToast('열 완성! +2점');
+  }
+  if (isLineComplete(boxArr)) {
+    bonus += 2;
+    showToast('박스 완성! +2점');
+  }
+  return bonus;
 }
 
 function addRipple(cell, e) {
