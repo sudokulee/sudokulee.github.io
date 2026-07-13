@@ -123,36 +123,40 @@ body{
   justify-content:space-between;
   padding:var(--space-4) 0 var(--space-3);
   flex-shrink:0;
+  gap:var(--space-2);
+  overflow:hidden;
 }
 .logo{
-  font-size:var(--text-2xl);
+  font-size:clamp(18px,5vw,32px);
   font-weight:var(--weight-extrabold);
   letter-spacing:-0.5px;
   color:var(--text);
   line-height:1.2;
+  white-space:nowrap;
 }
 .logo-accent{color:var(--primary)}
 .header-actions{
   display:flex;
   gap:var(--space-2);
+  flex-shrink:0;
 }
 .header-btn{
   display:flex;
   align-items:center;
   justify-content:center;
   gap:var(--space-2);
-  padding:var(--space-3) var(--space-5);
+  padding:var(--space-2) var(--space-4);
   border-radius:var(--btn-radius);
   border:2.5px solid var(--primary);
   background:var(--primary);
   color:#FFFFFF;
-  font-size:var(--text-lg);
+  font-size:var(--text-base);
   font-weight:var(--weight-bold);
   font-family:var(--font-family);
   cursor:pointer;
   transition:all var(--transition-base);
-  min-height:var(--touch-min);
-  min-width:var(--touch-min);
+  min-height:44px;
+  white-space:nowrap;
   line-height:1.2;
   -webkit-tap-highlight-color:transparent;
 }
@@ -163,8 +167,8 @@ body{
   background:#FFFFFF;
   color:#111827;
   border:2px solid #111827;
-  padding:var(--space-3) var(--space-4);
-  font-size:var(--text-base);
+  padding:var(--space-2) var(--space-3);
+  font-size:clamp(14px,3.5vw,18px);
   font-weight:var(--weight-bold);
 }
 .header-btn-outline:active{
@@ -1324,7 +1328,13 @@ function newGame(difficulty) {
 
 function selectCell(r, c) {
   if (state.gameOver || state.paused) return;
-  state.selectedCell = [r, c];
+  
+  if (state.selectedCell && state.selectedCell[0] === r && state.selectedCell[1] === c) {
+    state.selectedCell = null;
+  } else {
+    state.selectedCell = [r, c];
+  }
+  
   render();
   saveGameDebounced();
 }
