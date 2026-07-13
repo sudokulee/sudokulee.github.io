@@ -1626,6 +1626,7 @@ function eraseCell() {
 function toggleMemoMode() {
   state.noteMode = !state.noteMode;
   btnMemo.classList.toggle('memo-active', state.noteMode);
+  showToast(state.noteMode ? '📝 메모 모드' : '숫자 입력 모드');
 }
 
 function confirmErase() {
