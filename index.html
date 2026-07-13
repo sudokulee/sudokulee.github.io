@@ -1662,14 +1662,6 @@ function undo() {
   if (action.type === 'value' || action.type === 'erase') {
     state.board[action.r][action.c] = action.prev;
     state.notes[action.r][action.c] = action.prevNotes || [];
-    if (action.prevScore !== undefined && action.nextScore !== undefined) {
-      state.score = action.prevScore;
-      updateScoreDisplay();
-    }
-    // Restore scoredCells
-    if (action.prevScored !== undefined) {
-      state.scoredCells[action.r][action.c] = action.prevScored;
-    }
   } else if (action.type === 'note') {
     state.notes[action.r][action.c] = action.prev;
   } else if (action.type === 'hint') {
@@ -1693,14 +1685,6 @@ function redo() {
   if (action.type === 'value' || action.type === 'erase') {
     state.board[action.r][action.c] = action.next;
     state.notes[action.r][action.c] = action.nextNotes || [];
-    if (action.nextScore !== undefined) {
-      state.score = action.nextScore;
-      updateScoreDisplay();
-    }
-    // Restore scoredCells
-    if (action.nextScored !== undefined) {
-      state.scoredCells[action.r][action.c] = action.nextScored;
-    }
   } else if (action.type === 'note') {
     state.notes[action.r][action.c] = action.next;
   } else if (action.type === 'hint') {
