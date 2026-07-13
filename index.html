@@ -844,9 +844,6 @@ body{
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* Hidden file input for import */
-#importInput{display:none}
-
 /* Scrollbar hide */
 ::-webkit-scrollbar{display:none}
 
@@ -1066,9 +1063,6 @@ body{
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- Hidden file input for import -->
-<input type="file" id="importInput" accept=".json">
-
 <script>
 (function(){
 'use strict';
@@ -1087,7 +1081,6 @@ let state = {
   initial: [],
   solution: [],
   notes: [],
-  scoredCells: Array.from({ length: 9 }, () => Array(9).fill(false)),
   difficulty: 'medium',
   timer: 0,
   score: 10,
@@ -1281,7 +1274,6 @@ const timerEl = document.getElementById('timerDisplay');
 const diffBadge = document.getElementById('diffBadge');
 const scoreEl = document.getElementById('scoreCount');
 const toastEl = document.getElementById('toast');
-const importInput = document.getElementById('importInput');
 
 const modalNew = document.getElementById('modalNewGame');
 const modalWin = document.getElementById('modalWin');
@@ -1493,7 +1485,6 @@ function newGame(difficulty) {
   state.notes = Array.from({ length: 9 }, () =>
     Array.from({ length: 9 }, () => [])
   );
-  state.scoredCells = Array.from({ length: 9 }, () => Array(9).fill(false));
   state.difficulty = difficulty;
   state.timer = 0;
   state.score = 10;
@@ -2091,7 +2082,6 @@ function saveGame() {
     initial: state.initial,
     solution: state.solution,
     notes: state.notes,
-    scoredCells: state.scoredCells,
     difficulty: state.difficulty,
     timer: state.timer,
     score: state.score,
@@ -2130,7 +2120,6 @@ function loadGame() {
     state.initial = data.initial;
     state.solution = data.solution;
     state.notes = data.notes;
-    state.scoredCells = data.scoredCells || Array.from({ length: 9 }, () => Array(9).fill(false));
     state.difficulty = data.difficulty || 'medium';
     state.timer = data.timer || 0;
     state.score = data.score !== undefined ? data.score : 10;
@@ -2144,64 +2133,12 @@ function loadGame() {
 
     diffBadge.textContent = DIFFICULTY_LABELS[state.difficulty] || '보통';
     diffBadge.dataset.diff = state.difficulty || 'medium';
+    btnMemo.classList.toggle('memo-active', state.noteMode);
     render();
   } catch (e) {
     console.warn('Failed to load game:', e);
     newGame('medium');
   }
-}
-
-// ═══════════════════════════════════════════
-// EXPORT / IMPORT
-// ═══════════════════════════════════════════
-function exportGame() {
-  const data = {
-    version: 1,
-    board: state.board,
-    initial: state.initial,
-    solution: state.solution,
-    notes: state.notes,
-    scoredCells: state.scoredCells,
-    difficulty: state.difficulty,
-    timer: state.timer,
-    score: state.score,
-    selectedCell: state.selectedCell,
-    noteMode: state.noteMode,
-    history: state.history.slice(-50),
-    gameOver: state.gameOver,
-    createdAt: state.createdAt,
-    lastSavedAt: Date.now()
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'sudoku_save.json';
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('파일을 저장했습니다');
-}
-
-function importGame(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    try {
-      const data = JSON.parse(ev.target.result);
-      if (!data || !data.board || data.version !== 1) {
-        showToast('잘못된 파일 형식입니다');
-        return;
-      }
-      localStorage.setItem(STORAGE_KEY, ev.target.result);
-      loadGame();
-      showToast('게임을 불러왔습니다');
-    } catch (err) {
-      showToast('파일을 읽을 수 없습니다');
-    }
-  };
-  reader.readAsText(file);
-  importInput.value = '';
 }
 
 // ═══════════════════════════════════════════
