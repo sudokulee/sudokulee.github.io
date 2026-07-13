@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FFFFFF">
+<title>스도쿠</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  /* ── Elderly-Friendly Color System ── */
+  --bg:#FFFFFF;
+  --surface:#FFFFFF;
+  --surface-raised:#F3F4F6;
+  --border:#374151;
+  --border-thin:#9CA3AF;
+  --border-thick:#1F2937;
+  --primary:#2563EB;
+  --primary-hover:#1D4ED8;
+  --primary-light:#DBEAFE;
+  --primary-ring:rgba(37,99,235,0.35);
+  --error:#DC2626;
+  --error-bg:#FEE2E2;
+  --error-ring:rgba(220,38,38,0.30);
+  --success:#059669;
+  --success-bg:#D1FAE5;
+  --text:#111827;
+  --text-secondary:#374151;
+  --text-muted:#6B7280;
+  --same-num-bg:#FFE066;
+  --highlight-row-col:#FFE066;
+  --cell-bg:#FFFFFF;
+  --initial-num:#111827;
+  --user-num:#2563EB;
+
+  /* ── Spacing Scale (8px base) ── */
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-5:20px;
+  --space-6:24px;
+  --space-8:32px;
+  --space-10:40px;
+
+  /* ── Typography ── */
+  --font-family:-apple-system,BlinkMacSystemFont,'Malgun Gothic','맑은 고딕',sans-serif;
+  --text-xs:14px;
+  --text-sm:16px;
+  --text-base:20px;
+  --text-lg:24px;
+  --text-xl:28px;
+  --text-2xl:32px;
+  --text-3xl:40px;
+  --text-board:clamp(24px,6vw,32px);
+  --text-numpad:clamp(22px,6vw,30px);
+  --weight-regular:400;
+  --weight-semibold:600;
+  --weight-bold:700;
+  --weight-extrabold:800;
+  --line-height:1.6;
+
+  /* ── Touch Targets ── */
+  --touch-min:56px;
+  --cell-size:clamp(40px,10.5vw,54px);
+  --btn-radius:12px;
+  --radius:12px;
+  --radius-sm:8px;
+  --radius-lg:20px;
+
+  /* ── Shadows ── */
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.10);
+  --shadow-md:0 2px 8px rgba(0,0,0,0.12);
+  --shadow-lg:0 4px 16px rgba(0,0,0,0.14);
+
+  /* ── Transitions ── */
+  --transition-fast:150ms ease;
+  --transition-base:200ms ease;
+}
+html{
+  touch-action:manipulation;
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-text-size-adjust:100%;
+}
+body{
+  font-family:var(--font-family);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  font-size:var(--text-base);
+  line-height:var(--line-height);
+  font-weight:var(--weight-regular);
+}
+
+/* ═══════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════ */
+.container{
+  width:100%;
+  max-width:460px;
+  margin:0 auto;
+  padding:0 var(--space-4);
+  display:flex;
+  flex-direction:column;
+  min-height:100dvh;
+}
+
+/* ═══════════════════════════════════════
+   HEADER — Simplified, large, clear
+   ═══════════════════════════════════════ */
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:var(--space-4) 0 var(--space-3);
+  flex-shrink:0;
+}
+.logo{
+  font-size:var(--text-2xl);
+  font-weight:var(--weight-extrabold);
+  letter-spacing:-0.5px;
+  color:var(--text);
+  line-height:1.2;
+}
+.logo-accent{color:var(--primary)}
+.header-btn{
+  display:flex;
+  align-items:center;
+  gap:var(--space-2);
+  padding:var(--space-3) var(--space-5);
+  border-radius:var(--btn-radius);
+  border:2.5px solid var(--primary);
+  background:var(--primary);
+  color:#FFFFFF;
+  font-size:var(--text-lg);
+  font-weight:var(--weight-bold);
+  font-family:var(--font-family);
+  cursor:pointer;
+  transition:all var(--transition-base);
+  min-height:var(--touch-min);
+  min-width:var(--touch-min);
+  line-height:1.2;
+  -webkit-tap-highlight-color:transparent;
+}
+.header-btn:active{
+  background:var(--primary-hover);
+  transform:scale(0.97);
+}
+
+/* ═══════════════════════════════════════
+   STATUS BAR — Large, prominent
+   ═══════════════════════════════════════ */
+.status-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:var(--space-2) 0 var(--space-3);
+  flex-shrink:0;
+  gap:var(--space-3);
+}
+.difficulty-badge{
+  font-size:var(--text-sm);
+  font-weight:var(--weight-bold);
+  padding:var(--space-2) var(--space-4);
+  border-radius:var(--radius);
+  background:var(--primary-light);
+  color:var(--primary);
+  letter-spacing:0.3px;
+  border:2px solid var(--primary);
+  white-space:nowrap;
+}
+.timer-group{
+  display:flex;
+  align-items:center;
+  gap:var(--space-2);
+  background:var(--surface-raised);
+  padding:var(--space-2) var(--space-4);
+  border-radius:var(--radius);
+  border:2px solid var(--border);
+}
+.timer-label{
+  font-size:var(--text-xs);
+  font-weight:var(--weight-bold);
+  color:var(--text-muted);
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+}
+.timer{
+  font-size:var(--text-lg);
+  font-weight:var(--weight-extrabold);
+  color:var(--text);
+  font-variant-numeric:tabular-nums;
+  letter-spacing:0.5px;
+  min-width:80px;
+  text-align:right;
+}
+.mistakes{
+  font-size:var(--text-sm);
+  color:var(--text-secondary);
+  font-weight:var(--weight-bold);
+  background:var(--surface-raised);
+  padding:var(--space-2) var(--space-4);
+  border-radius:var(--radius);
+  border:2px solid var(--border);
+  white-space:nowrap;
+}
+.mistakes-count{
+  color:var(--error);
+  font-weight:var(--weight-extrabold);
+  font-size:var(--text-lg);
+  margin-left:var(--space-1);
+}
+
+/* ═══════════════════════════════════════
+   BOARD — Largest element, thick borders
+   ═══════════════════════════════════════ */
+.board-wrapper{
+  display:flex;
+  justify-content:center;
+  flex-shrink:0;
+  padding:var(--space-2) 0 var(--space-4);
+}
+.board{
+  display:grid;
+  grid-template-columns:repeat(9,var(--cell-size));
+  grid-template-rows:repeat(9,var(--cell-size));
+  border:3px solid var(--border-thick);
+  border-radius:var(--radius-sm);
+  background:var(--border-thick);
+  gap:0;
+  touch-action:manipulation;
+  box-shadow:var(--shadow-lg);
+}
+.cell{
+  width:var(--cell-size);
+  height:var(--cell-size);
+  background:var(--cell-bg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  position:relative;
+  transition:background var(--transition-fast);
+  border:0.5px solid var(--border-thin);
+}
+/* 3x3 box borders — thick, unmistakable */
+.cell[data-col="2"],.cell[data-col="5"]{border-right:2.5px solid var(--border-thick)}
+.cell[data-row="2"],.cell[data-row="5"]{border-bottom:2.5px solid var(--border-thick)}
+.cell[data-col="3"],.cell[data-col="6"]{border-left:2.5px solid var(--border-thick)}
+.cell[data-row="3"],.cell[data-row="6"]{border-top:2.5px solid var(--border-thick)}
+
+/* Cell values — large, bold, readable */
+.cell .value{
+  font-size:var(--text-board);
+  font-weight:var(--weight-bold);
+  line-height:1;
+  pointer-events:none;
+  font-family:var(--font-family);
+}
+.cell .value.initial{color:var(--initial-num);font-weight:var(--weight-extrabold)}
+.cell .value.user{color:var(--user-num)}
+.cell .value.error{color:var(--error);font-weight:var(--weight-extrabold)}
+
+/* Notes grid (hidden for elderly, kept for state compatibility) */
+.cell .notes{display:none}
+
+/* ── Cell States — Very obvious visual cues ── */
+.cell.selected{
+  background:#FFFFFF;
+  box-shadow:inset 0 0 0 3px #D97706;
+}
+.cell.selected .value{color:#000000 !important;font-weight:var(--weight-extrabold)}
+.cell.same-number{
+  background:#FFE066;
+}
+.cell.highlighted{
+  background:#FFE066;
+}
+.cell.error-cell{
+  background:var(--error-bg);
+  box-shadow:inset 0 0 0 3px var(--error);
+}
+.cell.error-cell .value{color:var(--error) !important}
+
+.cell.hint-pop .value{animation:hintPop 400ms ease}
+@keyframes hintPop{
+  0%{transform:scale(0.3);opacity:0}
+  50%{transform:scale(1.15)}
+  100%{transform:scale(1);opacity:1}
+}
+
+/* Tap ripple — stronger, more visible */
+.cell .ripple{
+  position:absolute;
+  border-radius:50%;
+  background:rgba(37,99,235,0.20);
+  transform:scale(0);
+  animation:rippleAnim 400ms ease-out forwards;
+  pointer-events:none;
+}
+@keyframes rippleAnim{
+  to{transform:scale(2.5);opacity:0}
+}
+
+/* ═══════════════════════════════════════
+   CONTROLS — Bottom-anchored for thumb reach
+   ═══════════════════════════════════════ */
+.controls{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  padding-bottom:max(var(--space-4),env(safe-area-inset-bottom));
+  gap:var(--space-3);
+}
+
+/* ── Action Buttons — Only 3, very large ── */
+.action-row{
+  display:flex;
+  gap:var(--space-3);
+  justify-content:center;
+  padding:var(--space-2) 0;
+}
+.action-btn{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:var(--space-1);
+  padding:var(--space-3) var(--space-2);
+  border-radius:var(--btn-radius);
+  border:2.5px solid var(--border);
+  background:var(--surface);
+  color:var(--text-secondary);
+  font-size:var(--text-sm);
+  font-weight:var(--weight-bold);
+  font-family:var(--font-family);
+  cursor:pointer;
+  transition:all var(--transition-base);
+  box-shadow:var(--shadow-sm);
+  min-height:var(--touch-min);
+  -webkit-tap-highlight-color:transparent;
+  line-height:1.2;
+}
+.action-btn .btn-icon{
+  font-size:var(--text-xl);
+  line-height:1;
+}
+.action-btn:active{
+  transform:scale(0.96);
+  background:var(--primary-light);
+  border-color:var(--primary);
+  color:var(--primary);
+}
+.action-btn:disabled{
+  opacity:0.35;
+  pointer-events:none;
+}
+/* Erase button gets error-tinted styling */
+.action-btn.action-erase:active{
+  background:var(--error-bg);
+  border-color:var(--error);
+  color:var(--error);
+}
+
+/* ── Number Pad — Large, finger-friendly ── */
+.numpad{
+  display:grid;
+  grid-template-columns:repeat(9,1fr);
+  gap:var(--space-2);
+  padding:var(--space-1) 0;
+}
+.num-btn{
+  aspect-ratio:1;
+  min-height:var(--touch-min);
+  border-radius:var(--btn-radius);
+  border:2.5px solid var(--border);
+  background:var(--surface);
+  color:var(--text);
+  font-size:var(--text-numpad);
+  font-weight:var(--weight-extrabold);
+  font-family:var(--font-family);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all var(--transition-base);
+  box-shadow:var(--shadow-sm);
+  position:relative;
+  overflow:hidden;
+  font-variant-numeric:tabular-nums;
+  -webkit-tap-highlight-color:transparent;
+  line-height:1;
+}
+.num-btn:active{
+  transform:scale(0.94);
+  background:var(--primary-light);
+  border-color:var(--primary);
+}
+.num-btn.completed{
+  opacity:0.20;
+  pointer-events:none;
+  border-color:var(--border-thin);
+}
+.num-btn .count{
+  position:absolute;
+  top:3px;right:5px;
+  font-size:var(--text-xs);
+  font-weight:var(--weight-bold);
+  color:var(--text-muted);
+}
+
+/* ═══════════════════════════════════════
+   MODALS — Large text, big buttons
+   ═══════════════════════════════════════ */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.50);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:100;
+  padding:var(--space-6);
+}
+.modal-overlay.show{display:flex}
+.modal{
+  background:var(--surface);
+  border-radius:var(--radius-lg);
+  padding:var(--space-8) var(--space-6);
+  width:100%;
+  max-width:400px;
+  box-shadow:0 24px 64px rgba(0,0,0,0.25);
+  text-align:center;
+  animation:modalIn 250ms ease;
+  border:3px solid var(--border);
+}
+@keyframes modalIn{
+  from{opacity:0;transform:scale(0.92) translateY(10px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+.modal h2{
+  font-size:var(--text-2xl);
+  font-weight:var(--weight-extrabold);
+  margin-bottom:var(--space-3);
+  color:var(--text);
+  line-height:1.3;
+}
+.modal p{
+  font-size:var(--text-base);
+  color:var(--text-secondary);
+  margin-bottom:var(--space-6);
+  line-height:var(--line-height);
+  font-weight:var(--weight-regular);
+}
+.modal-emoji{font-size:56px;margin-bottom:var(--space-4);display:block}
+.modal .time-display{
+  font-size:var(--text-3xl);
+  font-weight:var(--weight-extrabold);
+  color:var(--primary);
+  margin:var(--space-3) 0 var(--space-5);
+  line-height:1.2;
+}
+
+/* Difficulty Grid — 2x2, very large buttons */
+.diff-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:var(--space-3);
+  margin-bottom:var(--space-6);
+}
+.diff-btn{
+  padding:var(--space-5) var(--space-4);
+  border-radius:var(--radius);
+  border:3px solid var(--border);
+  background:var(--surface);
+  cursor:pointer;
+  transition:all var(--transition-base);
+  text-align:center;
+  min-height:var(--touch-min);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+}
+.diff-btn:active{
+  border-color:var(--primary);
+  background:var(--primary-light);
+}
+.diff-btn .diff-name{
+  font-size:var(--text-lg);
+  font-weight:var(--weight-bold);
+  color:var(--text);
+  display:block;
+  line-height:1.3;
+}
+.diff-btn .diff-desc{
+  font-size:var(--text-sm);
+  color:var(--text-muted);
+  margin-top:var(--space-1);
+  display:block;
+  font-weight:var(--weight-regular);
+}
+.diff-btn.active{
+  border-color:var(--primary);
+  background:var(--primary-light);
+  box-shadow:0 0 0 3px var(--primary-ring);
+}
+
+/* Modal Actions — Large, clear buttons */
+.modal-actions{
+  display:flex;
+  gap:var(--space-3);
+  margin-top:var(--space-4);
+}
+.btn{
+  flex:1;
+  padding:var(--space-4) var(--space-5);
+  border-radius:var(--btn-radius);
+  border:none;
+  font-size:var(--text-lg);
+  font-weight:var(--weight-bold);
+  font-family:var(--font-family);
+  cursor:pointer;
+  transition:all var(--transition-base);
+  min-height:var(--touch-min);
+  line-height:1.3;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn-primary{
+  background:var(--primary);
+  color:#FFFFFF;
+}
+.btn-primary:active{
+  background:var(--primary-hover);
+  transform:scale(0.97);
+}
+.btn-secondary{
+  background:var(--surface-raised);
+  color:var(--text);
+  border:2.5px solid var(--border);
+}
+.btn-secondary:active{
+  background:var(--border-thin);
+  transform:scale(0.97);
+}
+.btn-danger{
+  background:var(--error);
+  color:#FFFFFF;
+}
+.btn-danger:active{
+  background:#B91C1C;
+  transform:scale(0.97);
+}
+
+/* Completion Stats */
+.completion-stats{
+  display:flex;
+  gap:var(--space-5);
+  justify-content:center;
+  margin:var(--space-4) 0 var(--space-6);
+}
+.stat{text-align:center}
+.stat-val{
+  font-size:var(--text-2xl);
+  font-weight:var(--weight-extrabold);
+  color:var(--text);
+  display:block;
+  line-height:1.2;
+}
+.stat-label{
+  font-size:var(--text-sm);
+  color:var(--text-muted);
+  display:block;
+  margin-top:var(--space-1);
+  font-weight:var(--weight-semibold);
+}
+
+/* ═══════════════════════════════════════
+   TOAST — Large, persistent, impossible to miss
+   ═══════════════════════════════════════ */
+.toast{
+  position:fixed;
+  bottom:calc(100px + env(safe-area-inset-bottom));
+  left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--text);
+  color:#FFFFFF;
+  padding:var(--space-4) var(--space-6);
+  border-radius:var(--radius-lg);
+  font-size:var(--text-base);
+  font-weight:var(--weight-bold);
+  font-family:var(--font-family);
+  opacity:0;
+  transition:all 300ms ease;
+  z-index:200;
+  pointer-events:none;
+  white-space:nowrap;
+  box-shadow:var(--shadow-lg);
+  border:2px solid var(--border-thick);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Hidden file input for import */
+#importInput{display:none}
+
+/* Scrollbar hide */
+::-webkit-scrollbar{display:none}
+
+/* Safe area padding for notch devices */
+@supports(padding:max(0px)){
+  .container{
+    padding-left:max(16px,env(safe-area-inset-left));
+    padding-right:max(16px,env(safe-area-inset-right));
+  }
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE — Landscape & small screens
+   ═══════════════════════════════════════ */
+@media(max-height:640px){
+  :root{--cell-size:36px;--text-board:22px;--text-numpad:20px}
+  .header{padding:var(--space-2) 0 var(--space-1)}
+  .status-bar{padding:var(--space-1) 0 var(--space-2)}
+  .controls{gap:var(--space-2)}
+  .action-btn{padding:var(--space-2);min-height:48px}
+  .action-btn .btn-icon{font-size:var(--text-lg)}
+  .action-btn{font-size:var(--text-xs)}
+  .numpad{gap:var(--space-1)}
+  .num-btn{min-height:44px;font-size:18px}
+  .board-wrapper{padding:var(--space-1) 0 var(--space-2)}
+}
+@media(max-width:360px){
+  :root{--cell-size:36px;--text-board:20px;--text-numpad:18px}
+  .numpad{gap:var(--space-1)}
+  .action-btn{padding:var(--space-2);font-size:var(--text-xs)}
+  .action-btn .btn-icon{font-size:var(--text-lg)}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header — Simplified: just logo + new game -->
+  <header class="header">
+    <div class="logo">스도쿠<span class="logo-accent">.</span></div>
+    <button class="header-btn" id="btnNewGame" aria-label="새 게임">새 게임</button>
+  </header>
+
+  <!-- Status bar — Large, clear info -->
+  <div class="status-bar">
+    <span class="difficulty-badge" id="diffBadge">보통</span>
+    <div class="timer-group">
+      <span class="timer-label">시간</span>
+      <span class="timer" id="timerDisplay">00:00</span>
+    </div>
+    <span class="mistakes">오류 <span class="mistakes-count" id="mistakesCount">0</span></span>
+  </div>
+
+  <!-- Board — The star of the show -->
+  <div class="board-wrapper">
+    <div class="board" id="board"></div>
+  </div>
+
+  <!-- Controls — Bottom-anchored for thumb reach -->
+  <div class="controls">
+    <!-- Action buttons — 3 essential actions only -->
+    <div class="action-row">
+      <button class="action-btn action-erase" id="btnErase"><span class="btn-icon">⌫</span>지우기</button>
+      <button class="action-btn" id="btnHint"><span class="btn-icon">💡</span>힌트 도움</button>
+      <button class="action-btn" id="btnUndo"><span class="btn-icon">↩</span>되돌리기</button>
+    </div>
+    <!-- Number pad — Large, finger-friendly -->
+    <div class="numpad" id="numpad"></div>
+  </div>
+</div>
+
+<!-- Erase Confirmation Modal -->
+<div class="modal-overlay" id="modalErase">
+  <div class="modal">
+    <span class="modal-emoji">🗑️</span>
+    <h2>지우시겠습니까?</h2>
+    <p>선택한 칸의 숫자를 지웁니다</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="btnCancelErase">취소</button>
+      <button class="btn btn-danger" id="btnConfirmErase">지우기</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Game Modal -->
+<div class="modal-overlay" id="modalNewGame">
+  <div class="modal">
+    <span class="modal-emoji">🧩</span>
+    <h2>새 게임</h2>
+    <p>난이도를 선택하세요</p>
+    <div class="diff-grid">
+      <button class="diff-btn" data-diff="easy"><span class="diff-name">쉬움</span><span class="diff-desc">36개 숫자</span></button>
+      <button class="diff-btn active" data-diff="medium"><span class="diff-name">보통</span><span class="diff-desc">30개 숫자</span></button>
+      <button class="diff-btn" data-diff="hard"><span class="diff-name">어려움</span><span class="diff-desc">25개 숫자</span></button>
+      <button class="diff-btn" data-diff="expert"><span class="diff-name">전문가</span><span class="diff-desc">21개 숫자</span></button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="btnCancelNew">취소</button>
+      <button class="btn btn-primary" id="btnConfirmNew">시작하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Win Modal -->
+<div class="modal-overlay" id="modalWin">
+  <div class="modal">
+    <span class="modal-emoji">🎉</span>
+    <h2>축하합니다!</h2>
+    <p>퍼즐을 완성했습니다</p>
+    <div class="completion-stats">
+      <div class="stat"><span class="stat-val" id="winTime">00:00</span><span class="stat-label">소요 시간</span></div>
+      <div class="stat"><span class="stat-val" id="winDiff">-</span><span class="stat-label">난이도</span></div>
+      <div class="stat"><span class="stat-val" id="winMistakes">0</span><span class="stat-label">오류</span></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="btnWinNew">새 게임</button>
+    </div>
+  </div>
+</div>
+
+<!-- Pause Modal -->
+<div class="modal-overlay" id="modalPause">
+  <div class="modal">
+    <span class="modal-emoji">⏸</span>
+    <h2>일시정지</h2>
+    <p>화면을 눌러 계속하기</p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="btnResume">계속하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Hidden file input for import -->
+<input type="file" id="importInput" accept=".json">
+
+<script>
+(function(){
+'use strict';
+
+// ═══════════════════════════════════════════
+// CONSTANTS & STATE
+// ═══════════════════════════════════════════
+const STORAGE_KEY = 'sudoku_game_v1';
+const DIFFICULTY_CLUES = { easy: 36, medium: 30, hard: 25, expert: 21 };
+const DIFFICULTY_LABELS = { easy: '쉬움', medium: '보통', hard: '어려움', expert: '전문가' };
+const HISTORY_LIMIT = 200;
+
+let state = {
+  board: [],
+  initial: [],
+  solution: [],
+  notes: [],
+  difficulty: 'medium',
+  timer: 0,
+  mistakes: 0,
+  selectedCell: null,
+  noteMode: false,
+  history: [],
+  future: [],
+  paused: false,
+  gameOver: false,
+  createdAt: Date.now(),
+  lastSavedAt: Date.now()
+};
+
+let timerInterval = null;
+let saveDebounce = null;
+
+// ═══════════════════════════════════════════
+// SUDOKU GENERATOR (Backtracking)
+// ═══════════════════════════════════════════
+function createEmptyGrid() {
+  return Array.from({ length: 9 }, () => Array(9).fill(0));
+}
+
+function isValid(grid, row, col, num) {
+  for (let i = 0; i < 9; i++) {
+    if (grid[row][i] === num || grid[i][col] === num) return false;
+  }
+  const br = Math.floor(row / 3) * 3;
+  const bc = Math.floor(col / 3) * 3;
+  for (let r = br; r < br + 3; r++) {
+    for (let c = bc; c < bc + 3; c++) {
+      if (grid[r][c] === num) return false;
+    }
+  }
+  return true;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function solveSudoku(grid) {
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (grid[r][c] === 0) {
+        const nums = shuffle([1,2,3,4,5,6,7,8,9]);
+        for (const n of nums) {
+          if (isValid(grid, r, c, n)) {
+            grid[r][c] = n;
+            if (solveSudoku(grid)) return true;
+            grid[r][c] = 0;
+          }
+        }
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function countSolutions(grid, limit) {
+  let count = 0;
+  function solve(g) {
+    if (count >= limit) return;
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (g[r][c] === 0) {
+          for (let n = 1; n <= 9; n++) {
+            if (isValid(g, r, c, n)) {
+              g[r][c] = n;
+              solve(g);
+              g[r][c] = 0;
+            }
+          }
+          return;
+        }
+      }
+    }
+    count++;
+  }
+  solve(grid);
+  return count;
+}
+
+function generatePuzzle(clues) {
+  // Generate a full solution
+  const solution = createEmptyGrid();
+  solveSudoku(solution);
+
+  // Copy and remove cells
+  const puzzle = solution.map(r => [...r]);
+  const cells = [];
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      cells.push([r, c]);
+    }
+  }
+  shuffle(cells);
+
+  let removed = 0;
+  const target = 81 - clues;
+  for (const [r, c] of cells) {
+    if (removed >= target) break;
+    const backup = puzzle[r][c];
+    puzzle[r][c] = 0;
+    // Ensure unique solution
+    const temp = puzzle.map(row => [...row]);
+    if (countSolutions(temp, 2) === 1) {
+      removed++;
+    } else {
+      puzzle[r][c] = backup;
+    }
+  }
+  return { puzzle, solution };
+}
+
+// ═══════════════════════════════════════════
+// DOM REFERENCES
+// ═══════════════════════════════════════════
+const boardEl = document.getElementById('board');
+const numpadEl = document.getElementById('numpad');
+const timerEl = document.getElementById('timerDisplay');
+const diffBadge = document.getElementById('diffBadge');
+const mistakesEl = document.getElementById('mistakesCount');
+const toastEl = document.getElementById('toast');
+const importInput = document.getElementById('importInput');
+
+const modalNew = document.getElementById('modalNewGame');
+const modalWin = document.getElementById('modalWin');
+const modalPause = document.getElementById('modalPause');
+const modalErase = document.getElementById('modalErase');
+
+const btnUndo = document.getElementById('btnUndo');
+const btnErase = document.getElementById('btnErase');
+const btnHint = document.getElementById('btnHint');
+const btnNewGame = document.getElementById('btnNewGame');
+const btnResume = document.getElementById('btnResume');
+const btnWinNew = document.getElementById('btnWinNew');
+const btnCancelNew = document.getElementById('btnCancelNew');
+const btnConfirmNew = document.getElementById('btnConfirmNew');
+const btnCancelErase = document.getElementById('btnCancelErase');
+const btnConfirmErase = document.getElementById('btnConfirmErase');
+
+// ═══════════════════════════════════════════
+// INITIALIZATION
+// ═══════════════════════════════════════════
+function init() {
+  buildBoard();
+  buildNumpad();
+  bindEvents();
+  loadGame();
+  startTimer();
+}
+
+function buildBoard() {
+  boardEl.innerHTML = '';
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.row = r;
+      cell.dataset.col = c;
+      const val = document.createElement('span');
+      val.className = 'value';
+      cell.appendChild(val);
+      const notes = document.createElement('div');
+      notes.className = 'notes';
+      for (let n = 1; n <= 9; n++) {
+        const ns = document.createElement('span');
+        ns.dataset.note = n;
+        notes.appendChild(ns);
+      }
+      cell.appendChild(notes);
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function buildNumpad() {
+  numpadEl.innerHTML = '';
+  for (let n = 1; n <= 9; n++) {
+    const btn = document.createElement('button');
+    btn.className = 'num-btn';
+    btn.dataset.num = n;
+    btn.innerHTML = n + '<span class="count"></span>';
+    numpadEl.appendChild(btn);
+  }
+}
+
+function bindEvents() {
+  // Board cell tap
+  boardEl.addEventListener('click', function(e) {
+    const cell = e.target.closest('.cell');
+    if (!cell) return;
+    const r = parseInt(cell.dataset.row);
+    const c = parseInt(cell.dataset.col);
+    addRipple(cell, e);
+    selectCell(r, c);
+  });
+
+  // Click outside board to deselect cell
+  document.addEventListener('click', function(e) {
+    if (!boardEl.contains(e.target) && !numpadEl.contains(e.target) && 
+        !e.target.closest('.action-btn') && !e.target.closest('.modal')) {
+      if (state.selectedCell) {
+        state.selectedCell = null;
+        render();
+      }
+    }
+  });
+
+  // Prevent double-tap zoom
+  let lastTap = 0;
+  boardEl.addEventListener('touchend', function(e) {
+    const now = Date.now();
+    if (now - lastTap < 300) e.preventDefault();
+    lastTap = now;
+  }, { passive: false });
+
+  // Numpad
+  numpadEl.addEventListener('click', function(e) {
+    const btn = e.target.closest('.num-btn');
+    if (!btn || state.gameOver || state.paused) return;
+    const num = parseInt(btn.dataset.num);
+    inputNumber(num);
+  });
+
+  // Action buttons
+  if (btnUndo) btnUndo.addEventListener('click', undo);
+  btnErase.addEventListener('click', eraseCell);
+  btnHint.addEventListener('click', giveHint);
+  btnNewGame.addEventListener('click', showNewGameModal);
+  btnResume.addEventListener('click', togglePause);
+  btnWinNew.addEventListener('click', function() {
+    modalWin.classList.remove('show');
+    showNewGameModal();
+  });
+  btnCancelNew.addEventListener('click', function() {
+    modalNew.classList.remove('show');
+  });
+  btnConfirmNew.addEventListener('click', confirmNewGame);
+  btnCancelErase.addEventListener('click', function() {
+    modalErase.classList.remove('show');
+  });
+  btnConfirmErase.addEventListener('click', confirmErase);
+
+  // Difficulty selection
+  document.querySelectorAll('.diff-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.diff-btn').forEach(function(b) {
+        b.classList.remove('active');
+      });
+      this.classList.add('active');
+    });
+  });
+
+  // Keyboard support (simplified for elderly — number keys + delete only)
+  document.addEventListener('keydown', function(e) {
+    if (state.paused || state.gameOver) return;
+    const key = e.key;
+    if (key >= '1' && key <= '9') {
+      inputNumber(parseInt(key));
+    } else if (key === 'Backspace' || key === 'Delete') {
+      eraseCell();
+    } else if ((e.ctrlKey || e.metaKey) && key === 'z') {
+      e.preventDefault();
+      undo();
+    } else if ((e.ctrlKey || e.metaKey) && key === 'y') {
+      e.preventDefault();
+      redo();
+    } else if (state.selectedCell) {
+      navigateWithArrow(key);
+    }
+  });
+
+  // Tab visibility
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden && !state.gameOver) {
+      if (!state.paused) saveGame();
+      stopTimer();
+    } else if (!document.hidden && !state.paused) {
+      startTimer();
+    }
+  });
+
+  window.addEventListener('beforeunload', function() {
+    if (!state.gameOver) saveGame();
+  });
+}
+
+function navigateWithArrow(key) {
+  let [r, c] = state.selectedCell;
+  if (key === 'ArrowUp') r = Math.max(0, r - 1);
+  else if (key === 'ArrowDown') r = Math.min(8, r + 1);
+  else if (key === 'ArrowLeft') c = Math.max(0, c - 1);
+  else if (key === 'ArrowRight') c = Math.min(8, c + 1);
+  else return;
+  selectCell(r, c);
+}
+
+// ═══════════════════════════════════════════
+// GAME LOGIC
+// ═══════════════════════════════════════════
+function newGame(difficulty) {
+  const clues = DIFFICULTY_CLUES[difficulty];
+  const { puzzle, solution } = generatePuzzle(clues);
+
+  state.board = puzzle.map(r => [...r]);
+  state.initial = puzzle.map(r => [...r]);
+  state.solution = solution;
+  state.notes = Array.from({ length: 9 }, () =>
+    Array.from({ length: 9 }, () => [])
+  );
+  state.difficulty = difficulty;
+  state.timer = 0;
+  state.mistakes = 0;
+  state.selectedCell = null;
+  state.noteMode = false;
+  state.history = [];
+  state.future = [];
+  state.paused = false;
+  state.gameOver = false;
+  state.createdAt = Date.now();
+
+  diffBadge.textContent = DIFFICULTY_LABELS[difficulty];
+  render();
+  saveGame();
+  startTimer();
+  showToast('새 게임 시작!');
+}
+
+function selectCell(r, c) {
+  if (state.gameOver || state.paused) return;
+  state.selectedCell = [r, c];
+  render();
+  saveGameDebounced();
+}
+
+function inputNumber(num) {
+  if (!state.selectedCell || state.gameOver || state.paused) return;
+  const [r, c] = state.selectedCell;
+  if (state.initial[r][c] !== 0) return; // Can't edit initial cells
+
+  if (state.noteMode) {
+    // Toggle note (kept for state compatibility, not exposed in UI)
+    const prevNotes = [...state.notes[r][c]];
+    const idx = state.notes[r][c].indexOf(num);
+    if (idx >= 0) {
+      state.notes[r][c].splice(idx, 1);
+    } else {
+      state.notes[r][c].push(num);
+    }
+    pushHistory({ type: 'note', r, c, prev: prevNotes, next: [...state.notes[r][c]] });
+  } else {
+    // Place number
+    const prev = state.board[r][c];
+    if (prev === num) return; // Same number, no-op
+    const prevNotes = [...state.notes[r][c]];
+
+    // Check if correct
+    const correct = state.solution[r][c] === num;
+
+    state.board[r][c] = num;
+    state.notes[r][c] = [];
+
+    if (!correct) {
+      state.mistakes++;
+      mistakesEl.textContent = state.mistakes;
+    }
+
+    // Clear notes in same row/col/box when a number is placed
+    clearRelatedNotes(r, c, num);
+
+    pushHistory({
+      type: 'value',
+      r, c,
+      prev, next: num,
+      prevNotes,
+      nextNotes: [],
+      correct,
+      wasIncorrect: !correct
+    });
+
+    // Check win
+    checkWin();
+  }
+
+  render();
+  saveGame();
+}
+
+function clearRelatedNotes(row, col, num) {
+  const affected = new Set();
+  for (let i = 0; i < 9; i++) {
+    affected.add(`${row},${i}`);
+    affected.add(`${i},${col}`);
+  }
+  const br = Math.floor(row / 3) * 3;
+  const bc = Math.floor(col / 3) * 3;
+  for (let r = br; r < br + 3; r++) {
+    for (let c = bc; c < bc + 3; c++) {
+      affected.add(`${r},${c}`);
+    }
+  }
+  affected.delete(`${row},${col}`);
+  for (const key of affected) {
+    const [r, c] = key.split(',').map(Number);
+    const idx = state.notes[r][c].indexOf(num);
+    if (idx >= 0) state.notes[r][c].splice(idx, 1);
+  }
+}
+
+function eraseCell() {
+  if (!state.selectedCell || state.gameOver || state.paused) return;
+  const [r, c] = state.selectedCell;
+  if (state.initial[r][c] !== 0) return;
+  if (state.board[r][c] === 0 && state.notes[r][c].length === 0) return;
+
+  // Show confirmation dialog for elderly users
+  modalErase.classList.add('show');
+}
+
+function confirmErase() {
+  modalErase.classList.remove('show');
+  if (!state.selectedCell || state.gameOver || state.paused) return;
+  const [r, c] = state.selectedCell;
+  if (state.initial[r][c] !== 0) return;
+
+  const prev = state.board[r][c];
+  const prevNotes = [...state.notes[r][c]];
+
+  if (prev === 0 && prevNotes.length === 0) return;
+
+  state.board[r][c] = 0;
+  state.notes[r][c] = [];
+
+  pushHistory({ type: 'erase', r, c, prev, next: 0, prevNotes, nextNotes: [] });
+  render();
+  saveGame();
+  showToast('지웠습니다');
+}
+
+function undo() {
+  if (state.history.length === 0 || state.gameOver || state.paused) return;
+  const action = state.history.pop();
+  state.future.push(action);
+
+  if (action.type === 'value' || action.type === 'erase') {
+    state.board[action.r][action.c] = action.prev;
+    state.notes[action.r][action.c] = action.prevNotes || [];
+    if (action.wasIncorrect) {
+      state.mistakes = Math.max(0, state.mistakes - 1);
+      mistakesEl.textContent = state.mistakes;
+    }
+  } else if (action.type === 'note') {
+    state.notes[action.r][action.c] = action.prev;
+  } else if (action.type === 'hint') {
+    state.board[action.r][action.c] = action.prev;
+    state.notes[action.r][action.c] = action.prevNotes || [];
+  }
+
+  render();
+  saveGame();
+}
+
+function redo() {
+  if (state.future.length === 0 || state.gameOver || state.paused) return;
+  const action = state.future.pop();
+  state.history.push(action);
+
+  if (action.type === 'value' || action.type === 'erase') {
+    state.board[action.r][action.c] = action.next;
+    state.notes[action.r][action.c] = action.nextNotes || [];
+  } else if (action.type === 'note') {
+    state.notes[action.r][action.c] = action.next;
+  } else if (action.type === 'hint') {
+    state.board[action.r][action.c] = action.next;
+    state.notes[action.r][action.c] = action.nextNotes || [];
+  }
+
+  render();
+  saveGame();
+}
+
+function toggleNoteMode() {
+  state.noteMode = !state.noteMode;
+}
+
+function giveHint() {
+  if (state.gameOver || state.paused) return;
+
+  // Find an empty or incorrect cell
+  const candidates = [];
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (state.initial[r][c] === 0 && state.board[r][c] !== state.solution[r][c]) {
+        candidates.push([r, c]);
+      }
+    }
+  }
+  if (candidates.length === 0) {
+    showToast('힌트를 사용할 칸이 없습니다');
+    return;
+  }
+
+  // Prefer selected cell if it's a candidate
+  let [hr, hc] = candidates[Math.floor(Math.random() * candidates.length)];
+  if (state.selectedCell) {
+    const [sr, sc] = state.selectedCell;
+    if (state.initial[sr][sc] === 0 && state.board[sr][sc] !== state.solution[sr][sc]) {
+      hr = sr; hc = sc;
+    }
+  }
+
+  const prev = state.board[hr][hc];
+  const prevNotes = [...state.notes[hr][hc]];
+
+  state.board[hr][hc] = state.solution[hr][hc];
+  state.notes[hr][hc] = [];
+
+  pushHistory({
+    type: 'hint',
+    r: hr, c: hc,
+    prev, next: state.solution[hr][hc],
+    prevNotes, nextNotes: []
+  });
+
+  state.selectedCell = [hr, hc];
+  render();
+
+  // Animate hint cell
+  const cell = getCellEl(hr, hc);
+  if (cell) cell.classList.add('hint-pop');
+  setTimeout(() => { if (cell) cell.classList.remove('hint-pop'); }, 500);
+
+  showToast('힌트 사용!');
+  checkWin();
+  saveGame();
+}
+
+function pushHistory(action) {
+  state.history.push(action);
+  if (state.history.length > HISTORY_LIMIT) {
+    state.history.shift();
+  }
+  state.future = [];
+  updateUndoButtons();
+}
+
+function updateUndoButtons() {
+  if (btnUndo) btnUndo.disabled = state.history.length === 0;
+}
+
+function checkWin() {
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (state.board[r][c] !== state.solution[r][c]) return;
+    }
+  }
+  // WIN!
+  state.gameOver = true;
+  stopTimer();
+  saveGame();
+
+  setTimeout(() => {
+    document.getElementById('winTime').textContent = formatTime(state.timer);
+    document.getElementById('winDiff').textContent = DIFFICULTY_LABELS[state.difficulty];
+    document.getElementById('winMistakes').textContent = state.mistakes;
+    modalWin.classList.add('show');
+  }, 400);
+}
+
+// ═══════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════
+function startTimer() {
+  stopTimer();
+  if (state.paused || state.gameOver) return;
+  timerInterval = setInterval(() => {
+    if (!state.paused && !state.gameOver) {
+      state.timer++;
+      timerEl.textContent = formatTime(state.timer);
+      // Auto-save timer periodically
+      if (state.timer % 5 === 0) {
+        saveGameDebounced();
+      }
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+function formatTime(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function togglePause() {
+  if (state.gameOver) return;
+  state.paused = !state.paused;
+  if (state.paused) {
+    stopTimer();
+    modalPause.classList.add('show');
+  } else {
+    modalPause.classList.remove('show');
+    startTimer();
+  }
+}
+
+// ═══════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════
+function render() {
+  const [selR, selC] = state.selectedCell || [-1, -1];
+  const selVal = (selR >= 0) ? state.board[selR][selC] : 0;
+
+  // Count completed numbers
+  const numCounts = Array(10).fill(0);
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (state.board[r][c] !== 0) numCounts[state.board[r][c]]++;
+    }
+  }
+
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const cell = getCellEl(r, c);
+      if (!cell) continue;
+
+      const val = cell.querySelector('.value');
+      const notesDiv = cell.querySelector('.notes');
+      const num = state.board[r][c];
+      const isInitial = state.initial[r][c] !== 0;
+
+      // Reset classes
+      cell.className = 'cell';
+      cell.dataset.row = r;
+      cell.dataset.col = c;
+
+      // Selection highlighting
+      if (selR >= 0) {
+        if (r === selR && c === selC) {
+          cell.classList.add('selected');
+        } else if (r === selR || c === selC ||
+          (Math.floor(r/3) === Math.floor(selR/3) && Math.floor(c/3) === Math.floor(selC/3))) {
+          cell.classList.add('highlighted');
+        }
+        // Same number highlighting
+        if (selVal !== 0 && num === selVal && !(r === selR && c === selC)) {
+          cell.classList.add('same-number');
+        }
+      }
+
+      // Error highlighting
+      if (num !== 0 && !isInitial && num !== state.solution[r][c]) {
+        cell.classList.add('error-cell');
+      }
+
+      // Value display
+      if (num !== 0) {
+        val.textContent = num;
+        val.className = 'value ' + (isInitial ? 'initial' : 'user');
+        if (num !== 0 && !isInitial && num !== state.solution[r][c]) {
+          val.classList.add('error');
+        }
+        notesDiv.style.display = 'none';
+        val.style.display = '';
+      } else {
+        val.textContent = '';
+        val.style.display = 'none';
+        notesDiv.style.display = '';
+        // Render notes (kept for state compatibility)
+        for (let n = 1; n <= 9; n++) {
+          const ns = notesDiv.querySelector('span[data-note="' + n + '"]');
+          if (ns) ns.textContent = state.notes[r][c].includes(n) ? n : '';
+        }
+      }
+    }
+  }
+
+  // Numpad counts
+  const btns = numpadEl.querySelectorAll('.num-btn');
+  btns.forEach(function(btn) {
+    const n = parseInt(btn.dataset.num);
+    const count = 9 - numCounts[n];
+    btn.querySelector('.count').textContent = count > 0 ? count : '';
+    btn.classList.toggle('completed', count <= 0);
+  });
+
+  mistakesEl.textContent = state.mistakes;
+  timerEl.textContent = formatTime(state.timer);
+  updateUndoButtons();
+}
+
+function getCellEl(r, c) {
+  return boardEl.querySelector('.cell[data-row="' + r + '"][data-col="' + c + '"]');
+}
+
+function addRipple(cell, e) {
+  const existing = cell.querySelector('.ripple');
+  if (existing) existing.remove();
+  const ripple = document.createElement('div');
+  ripple.className = 'ripple';
+  const rect = cell.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  ripple.style.width = ripple.style.height = size + 'px';
+
+  let x, y;
+  if (e.changedTouches) {
+    x = e.changedTouches[0].clientX - rect.left;
+    y = e.changedTouches[0].clientY - rect.top;
+  } else {
+    x = e.clientX - rect.left;
+    y = e.clientY - rect.top;
+  }
+  ripple.style.left = (x - size / 2) + 'px';
+  ripple.style.top = (y - size / 2) + 'px';
+  cell.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 500);
+}
+
+// ═══════════════════════════════════════════
+// NEW GAME MODAL
+// ═══════════════════════════════════════════
+function showNewGameModal() {
+  if (!state.gameOver && (state.timer > 0 || hasAnyValues())) {
+    modalNew.classList.add('show');
+  } else {
+    newGame(state.difficulty);
+  }
+}
+
+function hasAnyValues() {
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (state.initial[r][c] === 0 && state.board[r][c] !== 0) return true;
+    }
+  }
+  return false;
+}
+
+function confirmNewGame() {
+  const active = document.querySelector('.diff-btn.active');
+  const diff = active ? active.dataset.diff : 'medium';
+  modalNew.classList.remove('show');
+  newGame(diff);
+}
+
+// ═══════════════════════════════════════════
+// PERSISTENCE (localStorage)
+// ═══════════════════════════════════════════
+function saveGame() {
+  const data = {
+    version: 1,
+    board: state.board,
+    initial: state.initial,
+    solution: state.solution,
+    notes: state.notes,
+    difficulty: state.difficulty,
+    timer: state.timer,
+    mistakes: state.mistakes,
+    selectedCell: state.selectedCell,
+    noteMode: state.noteMode,
+    history: state.history.slice(-50), // Limit saved history
+    gameOver: state.gameOver,
+    createdAt: state.createdAt,
+    lastSavedAt: Date.now()
+  };
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.warn('Failed to save game:', e);
+  }
+}
+
+function saveGameDebounced() {
+  if (saveDebounce) clearTimeout(saveDebounce);
+  saveDebounce = setTimeout(() => saveGame(), 300);
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      newGame('medium');
+      return;
+    }
+    const data = JSON.parse(raw);
+    if (!data || !data.board || data.version !== 1) {
+      newGame('medium');
+      return;
+    }
+    state.board = data.board;
+    state.initial = data.initial;
+    state.solution = data.solution;
+    state.notes = data.notes;
+    state.difficulty = data.difficulty || 'medium';
+    state.timer = data.timer || 0;
+    state.mistakes = data.mistakes || 0;
+    state.selectedCell = data.selectedCell;
+    state.noteMode = data.noteMode || false;
+    state.history = data.history || [];
+    state.future = [];
+    state.gameOver = data.gameOver || false;
+    state.createdAt = data.createdAt || Date.now();
+    state.paused = false;
+
+    diffBadge.textContent = DIFFICULTY_LABELS[state.difficulty] || '보통';
+    render();
+  } catch (e) {
+    console.warn('Failed to load game:', e);
+    newGame('medium');
+  }
+}
+
+// ═══════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════
+function exportGame() {
+  const data = {
+    version: 1,
+    board: state.board,
+    initial: state.initial,
+    solution: state.solution,
+    notes: state.notes,
+    difficulty: state.difficulty,
+    timer: state.timer,
+    mistakes: state.mistakes,
+    selectedCell: state.selectedCell,
+    noteMode: state.noteMode,
+    history: state.history.slice(-50),
+    gameOver: state.gameOver,
+    createdAt: state.createdAt,
+    lastSavedAt: Date.now()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sudoku_save.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('파일을 저장했습니다');
+}
+
+function importGame(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data || !data.board || data.version !== 1) {
+        showToast('잘못된 파일 형식입니다');
+        return;
+      }
+      localStorage.setItem(STORAGE_KEY, ev.target.result);
+      loadGame();
+      showToast('게임을 불러왔습니다');
+    } catch (err) {
+      showToast('파일을 읽을 수 없습니다');
+    }
+  };
+  reader.readAsText(file);
+  importInput.value = '';
+}
+
+// ═══════════════════════════════════════════
+// TOAST — 3.5 seconds for elderly readability
+// ═══════════════════════════════════════════
+let toastTimeout = null;
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toastEl.classList.remove('show'), 3500);
+}
+
+// ═══════════════════════════════════════════
+// LAUNCH
+// ═══════════════════════════════════════════
+init();
+
+})();
+</script>
+</body>
+</html>
