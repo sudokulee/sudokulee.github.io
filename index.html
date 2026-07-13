@@ -1960,7 +1960,7 @@ function render() {
 }
 
 function updateScoreDisplay() {
-  updateScoreDisplay();
+  scoreEl.textContent = state.score;
   scoreEl.className = 'score-count';
   if (state.score <= 3) scoreEl.classList.add('score-low');
   else if (state.score <= 6) scoreEl.classList.add('score-mid');
