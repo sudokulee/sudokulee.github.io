@@ -2027,11 +2027,7 @@ function addRipple(cell, e) {
 // NEW GAME MODAL
 // ═══════════════════════════════════════════
 function showNewGameModal() {
-  if (!state.gameOver && (state.timer > 0 || hasAnyValues())) {
-    modalNew.classList.add('show');
-  } else {
-    newGame(state.difficulty);
-  }
+  modalNew.classList.add('show');
 }
 
 function hasAnyValues() {
