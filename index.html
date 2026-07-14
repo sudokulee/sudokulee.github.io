@@ -188,22 +188,27 @@ body{
   flex-shrink:0;
   gap:var(--space-2);
 }
-.difficulty-badge{
-  font-size:var(--text-sm);
-  font-weight:var(--weight-bold);
+.status-item{
+  display:flex;
+  align-items:center;
+  justify-content:center;
   padding:var(--space-2) var(--space-3);
   border-radius:var(--radius);
+  border:2px solid var(--border);
+  min-height:36px;
+  box-sizing:border-box;
+  margin:0;
+  font-size:var(--text-sm);
+  font-weight:var(--weight-bold);
+  white-space:nowrap;
+  line-height:1;
+}
+.difficulty-badge{
   background:var(--primary-light);
   color:var(--primary);
   letter-spacing:0.3px;
-  border:2px solid var(--primary);
-  white-space:nowrap;
+  border-color:var(--primary);
   transition:all var(--transition-base);
-  min-height:36px;
-  display:flex;
-  align-items:center;
-  box-sizing:border-box;
-  margin:0;
 }
 .difficulty-badge[data-diff="easy"]{
   background:#D1FAE5;
@@ -226,16 +231,7 @@ body{
   border-color:#DC2626;
 }
 .timer-group{
-  display:flex;
-  align-items:center;
-  justify-content:center;
   background:var(--surface-raised);
-  padding:var(--space-2) var(--space-3);
-  border-radius:var(--radius);
-  border:2px solid var(--border);
-  min-height:36px;
-  box-sizing:border-box;
-  margin:0;
 }
 .timer-label{
   font-size:var(--text-xs);
@@ -245,31 +241,16 @@ body{
   letter-spacing:0.5px;
 }
 .timer{
-  font-size:var(--text-base);
-  font-weight:var(--weight-extrabold);
-  color:var(--text);
   font-variant-numeric:tabular-nums;
   letter-spacing:0.5px;
 }
 .status-btn{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:var(--space-2) var(--space-3);
-  border-radius:var(--radius);
-  border:2px solid var(--border);
   background:var(--surface);
   color:var(--text-secondary);
-  font-size:var(--text-sm);
-  font-weight:var(--weight-bold);
   font-family:var(--font-family);
   cursor:pointer;
   transition:all var(--transition-base);
-  min-height:36px;
-  white-space:nowrap;
   -webkit-tap-highlight-color:transparent;
-  box-sizing:border-box;
-  margin:0;
 }
 .status-btn:active{
   background:var(--primary-light);
@@ -277,19 +258,8 @@ body{
   color:var(--primary);
 }
 .score-display{
-  font-size:var(--text-sm);
-  font-weight:var(--weight-bold);
   color:var(--text);
-  padding:var(--space-2) var(--space-3);
-  border:2px solid var(--border);
-  border-radius:var(--radius-sm);
   background:var(--surface);
-  white-space:nowrap;
-  min-height:36px;
-  display:flex;
-  align-items:center;
-  box-sizing:border-box;
-  margin:0;
 }
 .score-count{
   font-size:var(--text-base);
@@ -936,12 +906,12 @@ body{
 
   <!-- Status bar — Large, clear info -->
   <div class="status-bar">
-    <span class="difficulty-badge" id="diffBadge" data-diff="medium">보통</span>
-    <div class="timer-group">
+    <span class="status-item difficulty-badge" id="diffBadge" data-diff="medium">보통</span>
+    <div class="status-item timer-group">
       <span class="timer" id="timerDisplay">00:00</span>
     </div>
-    <span class="score-display">점수 <span class="score-count" id="scoreCount">100</span></span>
-    <button class="status-btn" id="btnRules" aria-label="규칙">규칙</button>
+    <span class="status-item score-display">점수 <span class="score-count" id="scoreCount">100</span></span>
+    <button class="status-item status-btn" id="btnRules" aria-label="규칙">규칙</button>
   </div>
 
   <!-- Board — The star of the show -->
@@ -954,7 +924,7 @@ body{
     <!-- Action buttons -->
     <div class="action-row">
       <button class="action-btn" id="btnMemo"><span class="btn-icon">📝</span>메모 모드</button>
-      <button class="action-btn action-erase" id="btnErase"><span class="btn-icon">⌫</span>지우기</button>
+      <button class="action-btn action-erase" id="btnErase"><span class="btn-icon">🧽</span>지우기</button>
       <button class="action-btn" id="btnHint"><span class="btn-icon">💡</span>힌트 도움</button>
       <button class="action-btn" id="btnUndo"><span class="btn-icon">↩</span>되돌리기</button>
     </div>
