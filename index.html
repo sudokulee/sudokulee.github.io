@@ -1486,6 +1486,7 @@ function newGame(difficulty) {
   state.score = 100;
   state.selectedCell = null;
   state.noteMode = false;
+  btnMemo.classList.toggle('memo-active', false);
   state.history = [];
   state.future = [];
   state.paused = false;
