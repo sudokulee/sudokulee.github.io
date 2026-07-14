@@ -122,7 +122,7 @@ body{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:var(--space-4) 0 var(--space-3);
+  padding:var(--space-3) 0 var(--space-2);
   flex-shrink:0;
   gap:var(--space-2);
   overflow:hidden;
@@ -138,25 +138,25 @@ body{
 .logo-accent{color:var(--primary)}
 .header-actions{
   display:flex;
-  gap:var(--space-2);
+  gap:var(--space-1);
   flex-shrink:0;
 }
 .header-btn{
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:var(--space-2);
-  padding:var(--space-2) var(--space-4);
+  gap:var(--space-1);
+  padding:var(--space-2) var(--space-3);
   border-radius:var(--btn-radius);
   border:2.5px solid var(--primary);
   background:var(--primary);
   color:#FFFFFF;
-  font-size:var(--text-base);
+  font-size:var(--text-sm);
   font-weight:var(--weight-bold);
   font-family:var(--font-family);
   cursor:pointer;
   transition:all var(--transition-base);
-  min-height:44px;
+  min-height:40px;
   white-space:nowrap;
   line-height:1.2;
   -webkit-tap-highlight-color:transparent;
@@ -183,15 +183,15 @@ body{
 .status-bar{
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  padding:var(--space-2) 0 var(--space-3);
+  justify-content:center;
+  padding:var(--space-1) 0 var(--space-2);
   flex-shrink:0;
-  gap:var(--space-3);
+  gap:var(--space-2);
 }
 .difficulty-badge{
   font-size:var(--text-sm);
   font-weight:var(--weight-bold);
-  padding:var(--space-2) var(--space-4);
+  padding:var(--space-2) var(--space-3);
   border-radius:var(--radius);
   background:var(--primary-light);
   color:var(--primary);
@@ -199,6 +199,9 @@ body{
   border:2px solid var(--primary);
   white-space:nowrap;
   transition:all var(--transition-base);
+  min-height:36px;
+  display:flex;
+  align-items:center;
 }
 .difficulty-badge[data-diff="easy"]{
   background:#D1FAE5;
@@ -223,11 +226,12 @@ body{
 .timer-group{
   display:flex;
   align-items:center;
-  gap:var(--space-2);
+  justify-content:center;
   background:var(--surface-raised);
-  padding:var(--space-2) var(--space-4);
+  padding:var(--space-2) var(--space-3);
   border-radius:var(--radius);
   border:2px solid var(--border);
+  min-height:36px;
 }
 .timer-label{
   font-size:var(--text-xs);
@@ -237,16 +241,37 @@ body{
   letter-spacing:0.5px;
 }
 .timer{
-  font-size:var(--text-lg);
+  font-size:var(--text-base);
   font-weight:var(--weight-extrabold);
   color:var(--text);
   font-variant-numeric:tabular-nums;
   letter-spacing:0.5px;
-  min-width:80px;
-  text-align:right;
+}
+.status-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:var(--space-2) var(--space-3);
+  border-radius:var(--radius);
+  border:2px solid var(--border);
+  background:var(--surface);
+  color:var(--text-secondary);
+  font-size:var(--text-sm);
+  font-weight:var(--weight-bold);
+  font-family:var(--font-family);
+  cursor:pointer;
+  transition:all var(--transition-base);
+  min-height:36px;
+  white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;
+}
+.status-btn:active{
+  background:var(--primary-light);
+  border-color:var(--primary);
+  color:var(--primary);
 }
 .score-display{
-  font-size:var(--text-base);
+  font-size:var(--text-sm);
   font-weight:var(--weight-bold);
   color:var(--text);
   padding:var(--space-2) var(--space-3);
@@ -254,9 +279,12 @@ body{
   border-radius:var(--radius-sm);
   background:var(--surface);
   white-space:nowrap;
+  min-height:36px;
+  display:flex;
+  align-items:center;
 }
 .score-count{
-  font-size:var(--text-lg);
+  font-size:var(--text-base);
   font-weight:var(--weight-extrabold);
   margin-left:var(--space-1);
   transition:color 0.3s ease;
@@ -893,7 +921,6 @@ body{
     <div class="logo">👨🏻 아빠의 스도쿠</div>
     <div class="header-actions">
       <button class="header-btn header-btn-outline" id="btnRecords" aria-label="기록">기록</button>
-      <button class="header-btn header-btn-outline" id="btnRules" aria-label="규칙">규칙</button>
       <button class="header-btn header-btn-outline" id="btnReset" aria-label="다시하기">다시하기</button>
       <button class="header-btn header-btn-outline" id="btnNewGame" aria-label="새 게임">새 게임</button>
     </div>
@@ -903,10 +930,10 @@ body{
   <div class="status-bar">
     <span class="difficulty-badge" id="diffBadge" data-diff="medium">보통</span>
     <div class="timer-group">
-      <span class="timer-label">시간</span>
       <span class="timer" id="timerDisplay">00:00</span>
     </div>
     <span class="score-display">점수 <span class="score-count" id="scoreCount">100</span></span>
+    <button class="status-btn" id="btnRules" aria-label="규칙">규칙</button>
   </div>
 
   <!-- Board — The star of the show -->
